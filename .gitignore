@@ -20,3 +20,15 @@ yarn-error.log*
 *.njsproj
 *.sln
 *.sw?
+
+# Python
+backend/env/
+backend/__pycache__/
+backend/model.pkl
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+ENV/

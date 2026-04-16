@@ -9,89 +9,28 @@ import ExplainabilityPanel from './components/ExplainabilityPanel';
 import BuyerDashboard from './components/BuyerDashboard';
 import ConstructionBreakdown from './components/ConstructionBreakdown';
 import TCOCalculator from './components/TCOCalculator';
-import AgentDashboard from './components/AgentDashboard';
-import BankDashboard from './components/BankDashboard';
-import InvestorDashboard from './components/InvestorDashboard';
 import MonitoringPanel from './components/MonitoringPanel';
 import { runMLEngine, formatINR } from './mlEngine';
 
-// ── Role configs (buyer is primary, others are power-user views) ──────────────
-const ROLES = [
-  { id: 'buyer',    icon: '🏡', name: 'Home Buyer',          desc: 'Fair price, negotiation & market signals' },
-  { id: 'agent',    icon: '🤝', name: 'Real Estate Agent',   desc: 'Listing strategy & days-on-market' },
-  { id: 'bank',     icon: '🏦', name: 'Bank / Loan Officer', desc: 'Fraud detection, LTV & risk analysis' },
-  { id: 'investor', icon: '📈', name: 'Property Investor',   desc: 'ROI, rental yield & capital growth' },
-];
+// ── Role config (Home Buyer focus) ──────────────────────────────────────────
 
-function getRoleConfig(role, result) {
-  const { estimatedPrice, priceMin, priceMax, confidenceScore, demandScore,
-          liquidityDays, riskScore, projectedROI5Y, rentalYield, monthlyRent, inputs } = result;
+function getBuyerConfig(result) {
+  const { estimatedPrice, priceMin, priceMax, confidenceScore, inputs } = result;
   const brokerPrice = inputs.brokerQuote || estimatedPrice * 1.08;
-  const overvalPct  = Math.round(((brokerPrice - estimatedPrice) / estimatedPrice) * 100);
-  const ltv75       = Math.round(estimatedPrice * 0.75);
 
-  const configs = {
-    buyer: {
-      accentColor: '#3b82f6', accentGlow: 'rgba(59,130,246,0.18)', borderColor: 'rgba(59,130,246,0.35)',
-      reportTitle: '🏡 Your Property Report',
-      reportSubtitle: 'Fair price analysis · Negotiation insights · Market signals',
-      verdict: estimatedPrice <= brokerPrice * 1.06
-        ? { text: 'Fair Deal',  color: '#34d399', icon: '✅' }
-        : { text: 'Overpriced', color: '#fb7185', icon: '⚠️' },
-      stats: [
-        { label: 'ML Fair Value',  value: formatINR(estimatedPrice), color: '#60a5fa' },
-        { label: 'Confidence',     value: `${confidenceScore}%`,     color: '#a78bfa' },
-        { label: 'Price Range',    value: `${formatINR(priceMin)} – ${formatINR(priceMax)}`, color: '#94a3b8' },
-      ],
-    },
-    agent: {
-      accentColor: '#8b5cf6', accentGlow: 'rgba(139,92,246,0.18)', borderColor: 'rgba(139,92,246,0.35)',
-      reportTitle: '🤝 Agent Strategy Report',
-      reportSubtitle: 'Listing price · Days-on-market prediction · Buyer demand',
-      verdict: { text: demandScore > 70 ? 'Hot Market' : demandScore > 45 ? 'Active Market' : 'Slow Market',
-                 color: demandScore > 70 ? '#34d399' : demandScore > 45 ? '#fbbf24' : '#fb7185',
-                 icon: demandScore > 70 ? '🔥' : '📊' },
-      stats: [
-        { label: 'Suggested Listing', value: formatINR(Math.round(estimatedPrice * 1.03)), color: '#a78bfa' },
-        { label: 'Days on Market',    value: `~${liquidityDays} days`,   color: '#60a5fa' },
-        { label: 'Demand Score',      value: `${demandScore}/100`,       color: '#34d399' },
-        { label: 'Comparable Sales',  value: `${result.comparableDensity}`, color: '#fbbf24' },
-      ],
-    },
-    bank: {
-      accentColor: '#14b8a6', accentGlow: 'rgba(20,184,166,0.18)', borderColor: 'rgba(20,184,166,0.35)',
-      reportTitle: '🏦 Loan Risk Assessment',
-      reportSubtitle: 'Fraud detection · LTV analysis · Collateral health · Approval recommendation',
-      verdict: riskScore < 30
-        ? { text: 'LOW RISK — Approved',    color: '#34d399', icon: '✅' }
-        : riskScore < 55
-        ? { text: 'MODERATE — Conditional', color: '#fbbf24', icon: '⚠️' }
-        : { text: 'HIGH RISK — Decline',    color: '#fb7185', icon: '❌' },
-      stats: [
-        { label: 'ML Property Value',  value: formatINR(estimatedPrice), color: '#2dd4bf' },
-        { label: 'Safe Loan (LTV 75%)',value: formatINR(ltv75),          color: '#34d399' },
-        { label: 'Overvaluation Gap',  value: `${overvalPct > 0 ? '+' : ''}${overvalPct}%`, color: overvalPct > 15 ? '#fb7185' : '#34d399' },
-        { label: 'Risk Score',         value: `${riskScore}/100`, color: riskScore < 30 ? '#34d399' : riskScore < 55 ? '#fbbf24' : '#fb7185' },
-      ],
-    },
-    investor: {
-      accentColor: '#f59e0b', accentGlow: 'rgba(245,158,11,0.18)', borderColor: 'rgba(245,158,11,0.35)',
-      reportTitle: '📈 Investment Analytics',
-      reportSubtitle: 'ROI projection · Rental yield · Capital appreciation · Benchmark comparison',
-      verdict: projectedROI5Y > 60
-        ? { text: 'High Return Asset', color: '#34d399', icon: '🚀' }
-        : projectedROI5Y > 35
-        ? { text: 'Moderate Return',   color: '#fbbf24', icon: '📊' }
-        : { text: 'Low Return Asset',  color: '#fb7185', icon: '⚠️' },
-      stats: [
-        { label: '5-Year ROI',          value: `+${projectedROI5Y}%`,              color: '#fbbf24' },
-        { label: 'Annual Appreciation', value: `${result.annualAppreciation}%/yr`, color: '#34d399' },
-        { label: 'Rental Yield',        value: `${rentalYield}%`,                  color: '#60a5fa' },
-        { label: 'Monthly Rent Est.',   value: formatINR(monthlyRent),             color: '#a78bfa' },
-      ],
-    },
+  return {
+    accentColor: '#3b82f6', accentGlow: 'rgba(59,130,246,0.18)', borderColor: 'rgba(59,130,246,0.35)',
+    reportTitle: '🏡 Your Property Report',
+    reportSubtitle: 'Fair price analysis · Negotiation insights · Market signals',
+    verdict: estimatedPrice <= brokerPrice * 1.06
+      ? { text: 'Fair Deal',  color: '#34d399', icon: '✅' }
+      : { text: 'Overpriced', color: '#fb7185', icon: '⚠️' },
+    stats: [
+      { label: 'ML Fair Value',  value: formatINR(estimatedPrice), color: '#60a5fa' },
+      { label: 'Confidence',     value: `${confidenceScore}%`,     color: '#a78bfa' },
+      { label: 'Price Range',    value: `${formatINR(priceMin)} – ${formatINR(priceMax)}`, color: '#94a3b8' },
+    ],
   };
-  return configs[role];
 }
 
 // ── Property summary pill — handles all types gracefully ──────────────────────
@@ -180,37 +119,47 @@ function ResultCTA({ onNewAnalysis }) {
 
 // ── Main App ───────────────────────────────────────────────────────────────────
 export default function App() {
-  const [selectedRole,   setSelectedRole]   = useState('buyer');
   const [mlResult,       setMlResult]       = useState(null);
   const [loading,        setLoading]        = useState(false);
   const [activeTab,      setActiveTab]      = useState('report');
-  const [showRoleSwitch, setShowRoleSwitch] = useState(false);
 
-  const handleAnalyze = useCallback((inputs) => {
+  const handleAnalyze = useCallback(async (inputs) => {
     setLoading(true);
     setMlResult(null);
-    setTimeout(() => { window.__pendingResult = runMLEngine(inputs); }, 50);
+    try {
+      // Call the async ML engine
+      const result = await runMLEngine(inputs);
+      
+      // We still simulate a small loading animation delay for UX feel
+      setTimeout(() => {
+        setMlResult(result);
+        setLoading(false);
+        setActiveTab('report');
+        
+        // Scroll to results
+        setTimeout(() => {
+          document.getElementById('results-anchor')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
+      }, 1500); 
+    } catch (error) {
+      console.error("Analysis failed:", error);
+      setLoading(false);
+      // Fallback: simple alert or toast could go here
+    }
   }, []);
 
+  // handleLoadingComplete is no longer used for data retrieval
   const handleLoadingComplete = useCallback(() => {
-    const result = window.__pendingResult;
-    if (result) {
-      setMlResult(result);
-      setLoading(false);
-      setActiveTab('report');
-      setTimeout(() => {
-        document.getElementById('results-anchor')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 100);
-    }
+    // keeping signature for potential transition effects if needed, 
+    // but logic moved into handleAnalyze
   }, []);
 
   const handleNewAnalysis = () => {
     setMlResult(null);
-    setShowRoleSwitch(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const roleConfig = mlResult ? getRoleConfig(selectedRole, mlResult) : null;
+  const roleConfig = mlResult ? getBuyerConfig(mlResult) : null;
 
   // Buyer-friendly tab names
   const TABS = [
@@ -322,37 +271,8 @@ export default function App() {
                 <span className="meta-badge confidence">✓ {mlResult.confidenceScore}% ML Confidence</span>
                 <span className="info-chip">🏙️ {mlResult.inputs.city}, {mlResult.inputs.state}</span>
 
-                {/* Discreet role switcher for power users */}
-                <div style={{ marginLeft: 'auto', position: 'relative', zIndex: 999 }}>
-                  <button id="switch-role-btn"
-                    style={{ background: 'none', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'var(--text-muted)', fontSize: '12px', padding: '4px 10px', cursor: 'pointer' }}
-                    onClick={() => setShowRoleSwitch(v => !v)}>
-                    Switch view ▾
-                  </button>
-                  {showRoleSwitch && (
-                    <div style={{
-                      position: 'absolute', right: 0, top: '32px', zIndex: 50,
-                      background: 'var(--clr-surface)', border: '1px solid var(--clr-border)',
-                      borderRadius: '12px', padding: '8px', minWidth: '200px',
-                      boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
-                    }}>
-                      {ROLES.map(r => (
-                        <button key={r.id} id={`role-switch-${r.id}`}
-                          style={{
-                            display: 'flex', gap: '10px', alignItems: 'center', width: '100%',
-                            padding: '8px 12px', borderRadius: '8px', border: 'none', cursor: 'pointer', textAlign: 'left',
-                            background: selectedRole === r.id ? 'rgba(59,130,246,0.12)' : 'transparent',
-                            color: selectedRole === r.id ? '#60a5fa' : 'var(--text-secondary)',
-                            fontSize: '13px', fontWeight: selectedRole === r.id ? 600 : 400,
-                          }}
-                          onClick={() => { setSelectedRole(r.id); setShowRoleSwitch(false); setActiveTab('report'); }}>
-                          <span>{r.icon}</span>
-                          <span>{r.name}</span>
-                          {selectedRole === r.id && <span style={{ marginLeft: 'auto', fontSize: '10px' }}>✓</span>}
-                        </button>
-                      ))}
-                    </div>
-                  )}
+                <div style={{ marginLeft: 'auto' }}>
+                  <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Viewing as Home Buyer 🏡</span>
                 </div>
               </div>
             </div>
@@ -373,14 +293,8 @@ export default function App() {
 
             {/* ── Tab Content ── */}
 
-            {/* 📋 My Report — role dashboard */}
             {activeTab === 'report' && (
-              <div key={selectedRole}>
-                {selectedRole === 'buyer'    && <BuyerDashboard    result={mlResult} />}
-                {selectedRole === 'agent'    && <AgentDashboard    result={mlResult} />}
-                {selectedRole === 'bank'     && <BankDashboard     result={mlResult} />}
-                {selectedRole === 'investor' && <InvestorDashboard result={mlResult} />}
-              </div>
+              <BuyerDashboard result={mlResult} />
             )}
 
             {/* 💰 Financials — Intel Cards */}
@@ -439,7 +353,7 @@ export default function App() {
                     ))}
                   </div>
                 </div>
-                <MonitoringPanel role={selectedRole} result={mlResult} />
+                <MonitoringPanel role="buyer" result={mlResult} />
               </div>
             )}
 

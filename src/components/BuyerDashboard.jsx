@@ -146,12 +146,15 @@ export default function BuyerDashboard({ result }) {
         </div>
 
         {/* Center Box (Fair Value) */}
-        <div style={{ padding: '24px', borderRadius: '16px', background: 'rgba(59, 130, 246, 0.08)', border: '1px solid rgba(59,130,246, 0.25)', textAlign: 'center' }}>
+        <div style={{ padding: '24px', borderRadius: '16px', background: 'rgba(59, 130, 246, 0.08)', border: '1px solid rgba(59,130,246, 0.25)', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
           <div style={{ fontSize: '13px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '8px' }}>
             {numCenterTitle}
           </div>
-          <div style={{ fontFamily: 'var(--font-display)', fontSize: '28px', fontWeight: 800, color: '#60a5fa', marginBottom: '6px' }}>
+          <div style={{ fontFamily: 'var(--font-display)', fontSize: '28px', fontWeight: 800, color: '#60a5fa', marginBottom: '4px' }}>
             {numCenterValue}
+          </div>
+          <div style={{ fontSize: '10px', fontWeight: 700, color: result.predictionSource?.includes('Real-time') ? '#34d399' : '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>
+             {result.predictionSource?.includes('Real-time') ? '● ' : '○ '}{result.predictionSource}
           </div>
           <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
             {numCenterSub}

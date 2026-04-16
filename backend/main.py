@@ -40,7 +40,10 @@ async def root():
 async def predict(inputs: PropertyInputs):
     try:
         # Prepare data for prediction
-        input_df = pd.DataFrame([inputs.dict()])
+        data_dict = inputs.model_dump()
+        print(f"DEBUG: Processing prediction request: {data_dict}")
+        
+        input_df = pd.DataFrame([data_dict])
         
         # Predict using the pipeline
         prediction = model.predict(input_df)[0]
@@ -48,9 +51,11 @@ async def predict(inputs: PropertyInputs):
         return {
             "estimatedPrice": float(prediction),
             "currency": "INR",
-            "model_type": "RandomForestRegressor"
+            "model_type": "RandomForestRegressor",
+            "status": "success"
         }
     except Exception as e:
+        print(f"ERROR: Prediction failed: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":

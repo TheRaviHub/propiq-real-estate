@@ -149,8 +149,11 @@ function ageDepreciation(years) {
   return 0.65;
 }
 
-// ── Main ML Engine ────────────────────────────────────────────────────────
-export function runMLEngine(inputs) {
+/**
+ * Core ML Intelligence Engine (Async Bridge to Python Backend)
+ * Falls back to simulation if backend is unreachable.
+ */
+export async function runMLEngine(inputs) {
   const {
     city = 'Bangalore', locality = 'Koramangala',
     localityDemand = 'High',
@@ -187,13 +190,40 @@ export function runMLEngine(inputs) {
     // ── Plot / Land ─────────────────────────────────────────────────────
     zoneClassification = '',
     legalStatus        = '',
-    roadType           = '',
-    roadFrontageWidth  = 0,
-    plotShape          = '',
-    waterAvailable     = null,
-    electricityAvailable = null,
     sewerAvailable     = null,
   } = inputs;
+
+  let estimatedPrice = null;
+  let backendUsed = false;
+
+  // 1. Try to fetch from the newly created Python Backend (Phase 2)
+  try {
+    const response = await fetch('http://127.0.0.1:8000/predict', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        city: city || 'Bangalore',
+        propertyType: propertyType || 'Apartment',
+        bhk: parseInt(bhk) || 0,
+        bathrooms: parseInt(bathrooms) || 0,
+        area: parseFloat(area || plotArea || 0),
+        age: parseInt(age) || 0
+      })
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      estimatedPrice = data.estimatedPrice;
+      backendUsed = true;
+      console.log("✅ ML Prediction from Backend:", estimatedPrice);
+    }
+  } catch (err) {
+    console.warn("⚠️ Python Backend offline. Falling back to local JS simulation.");
+  }
+
+  // 1.1 Local results will now carry the source flag
+  const predictionSource = backendUsed ? 'Real-time Machine Learning' : 'Heuristic Simulation (Fallback)';
+
 
   // ══ PLOT / LAND — entirely different pricing model ════════════════════
   if (propertyType === 'Plot / Land') {
@@ -227,7 +257,10 @@ export function runMLEngine(inputs) {
 
     const pArea        = Number(plotArea) || 500;
     const pricePerSqft = Math.round(baseLandRate * cityLandAdj * zoneMult * legalMult * roadMult * shapeMult * frontageMult * cornerMult * gatedMult * utilMult * amenityLandBonus);
-    const estimatedPrice = Math.round(pArea * pricePerSqft);
+    if (estimatedPrice === null) {
+      estimatedPrice = Math.round(pArea * pricePerSqft);
+    }
+
     const confBase     = 62 + Math.round(infraS * 18);
     const confScore    = Math.min(confBase + (legalStatus ? 6 : 0) + (zoneClassification ? 4 : 0) + (roadType ? 3 : 0), 95);
     const demandScore  = Math.round((LOCALITY_DEMAND[localityDemand] || 1.0) * 55 + infraS * 20);
@@ -265,6 +298,7 @@ export function runMLEngine(inputs) {
         { feature: 'Plot Shape',          importance: 2,  direction: plotShape === 'Regular (Rectangle / Square)' ? 'positive' : 'negative' },
       ],
       inputs,
+      predictionSource
     };
   }
 
@@ -341,7 +375,9 @@ export function runMLEngine(inputs) {
     servantRoomFactor * kitchenFactor *
     (Number(parkingSpots) > 0 ? parkingSpotsFactor : parkingBonus);
 
-  const estimatedPrice = Math.round(pricePerSqft * area);
+  if (estimatedPrice === null) {
+    estimatedPrice = Math.round(pricePerSqft * area);
+  }
 
   // Price range
   const spreadFactor = localityDemand === 'Premium' ? 0.10 : localityDemand === 'High' ? 0.13 : 0.17;
@@ -414,6 +450,7 @@ export function runMLEngine(inputs) {
     ageFactor: Math.round(ageFactor * 100),
     featureImportance, comps,
     inputs,
+    predictionSource
   };
 }
 
