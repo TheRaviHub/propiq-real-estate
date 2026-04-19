@@ -134,14 +134,6 @@ function BuyerMonitoring({ result }) {
         </div>
       </div>
 
-      {/* Activity timeline */}
-      <div className="panel">
-        <SectionTitle icon="🕐" title="Valuation Activity Log" color="#a78bfa"
-          subtitle="Recent data points analyzed for this appraisal" />
-        <TimelineEntry time="Just now" event="ML Market Appraisal" detail={`Fair value established at ₹${estimatedPrice.toLocaleString()} with ${confidenceScore}% confidence.`} status="success" />
-        <TimelineEntry time="Today" event="Local Comps Scanned" detail={`Analyzed recent sales data for ${inputs.locality}. Supply is ${demandScore > 60 ? 'constraining' : 'stable'}.`} status="info" />
-        <TimelineEntry time="This week" event="Infrastructure Signal" detail={`Local project approvals in ${inputs.city} tracked. Price trends adjusted for locality demand.`} status="neutral" />
-      </div>
     </div>
   );
 }

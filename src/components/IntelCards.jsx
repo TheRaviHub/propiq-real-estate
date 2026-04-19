@@ -50,38 +50,6 @@ export default function IntelCards({ result }) {
         glowColor="var(--clr-accent-cyan)"
       />
       <IntelCard
-        label="Est. Time to Resell"
-        value={`~${liquidityDays} days`}
-        sub="If you decide to sell later"
-        trend={liquidityDays < 30 ? 'Fast sell' : liquidityDays < 60 ? 'Moderate' : 'Slow market'}
-        trendDir={liquidityDays < 30 ? 'up' : liquidityDays < 60 ? 'neutral' : 'down'}
-        glowColor="var(--clr-accent-teal)"
-      />
-      <IntelCard
-        label="Risk Score"
-        value={`${riskScore}/100`}
-        sub="Lower is safer"
-        trend={riskScore < 30 ? 'Low risk' : riskScore < 60 ? 'Moderate risk' : 'High risk'}
-        trendDir={riskDir}
-        glowColor={riskScore < 30 ? '#10b981' : riskScore < 60 ? '#f59e0b' : '#f43f5e'}
-      />
-      <IntelCard
-        label="5-Year ROI Projection"
-        value={`+${projectedROI5Y}%`}
-        sub="Capital appreciation"
-        trend="vs FD 6.5%"
-        trendDir={projectedROI5Y > 40 ? 'up' : 'neutral'}
-        glowColor="var(--clr-accent-emerald)"
-      />
-      <IntelCard
-        label="Rental Yield"
-        value={`${rentalYield}%`}
-        sub={`${formatINR(result.monthlyRent)}/month`}
-        trend="Annual gross yield"
-        trendDir="neutral"
-        glowColor="var(--clr-accent-amber)"
-      />
-      <IntelCard
         label="Comparable Sales"
         value={result.comparableDensity}
         sub="Recent transactions nearby"

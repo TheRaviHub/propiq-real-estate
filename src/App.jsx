@@ -139,7 +139,7 @@ export default function App() {
         // Scroll to results
         setTimeout(() => {
           document.getElementById('results-anchor')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }, 100);
+        }, 120);
       }, 1500); 
     } catch (error) {
       console.error("Analysis failed:", error);

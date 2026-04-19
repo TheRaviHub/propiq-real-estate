@@ -149,7 +149,42 @@ const DEFAULT_FORM = {
 // ── Sub-components ────────────────────────────────────────────────────────────
 function FieldError({ msg }) {
   if (!msg) return null;
+
+  const handleNextStep = () => {
+    setTouched(Object.keys(form).reduce((o, k) => ({ ...o, [k]: true }), {}));
+    const errs = validate(form);
+    setErrors(errs);
+    
+    if (currentStep === 1) {
+      if (!errs.state && !errs.city && !errs.locality && !errs.localityDemand) {
+        setCurrentStep(2);
+        setTouched({});
+      }
+    } else if (currentStep === 2) {
+      if (!errs.propertyType) {
+        setCurrentStep(3);
+        setTouched({});
+      }
+    } else if (currentStep === 3) {
+      // For land, specs validation is different
+      if (isLand_f) {
+        if (!errs.plotArea && !errs.zoneClassification && !errs.legalStatus) {
+           setCurrentStep(4);
+           setTouched({});
+        }
+      } else {
+        if (!errs.bhk && !errs.bathrooms && !errs.area && !errs.age && !errs.floor && !errs.totalFloors && !errs.plotArea && !errs.villaFloors && !errs.terraceArea && !errs.kitchenType) {
+          setCurrentStep(4);
+          setTouched({});
+        }
+      }
+    }
+  };
+
+  const handlePrevStep = () => setCurrentStep(prev => prev - 1);
+
   return (
+
     <div style={{
       display: 'flex', alignItems: 'center', gap: '6px',
       marginTop: '6px', fontSize: '12px', color: '#fb7185',
@@ -962,6 +997,7 @@ function validate(f) {
 
 // ── Main Component ────────────────────────────────────────────────────────────
 export default function PropertyForm({ onAnalyze }) {
+  const [currentStep, setCurrentStep] = useState(1);
   const [form, setForm]       = useState(DEFAULT_FORM);
   const [errors, setErrors]   = useState({});
   const [touched, setTouched] = useState({});
@@ -1064,6 +1100,39 @@ export default function PropertyForm({ onAnalyze }) {
 
   const totalErrors = Object.keys(errors).length;
 
+  const handleNextStep = () => {
+    setTouched(Object.keys(form).reduce((o, k) => ({ ...o, [k]: true }), {}));
+    const errs = validate(form);
+    setErrors(errs);
+    
+    if (currentStep === 1) {
+      if (!errs.state && !errs.city && !errs.locality && !errs.localityDemand) {
+        setCurrentStep(2);
+        setTouched({});
+      }
+    } else if (currentStep === 2) {
+      if (!errs.propertyType) {
+        setCurrentStep(3);
+        setTouched({});
+      }
+    } else if (currentStep === 3) {
+      // For land, specs validation is different
+      if (isLand_f) {
+        if (!errs.plotArea && !errs.zoneClassification && !errs.legalStatus) {
+           setCurrentStep(4);
+           setTouched({});
+        }
+      } else {
+        if (!errs.bhk && !errs.bathrooms && !errs.area && !errs.age && !errs.floor && !errs.totalFloors && !errs.plotArea && !errs.villaFloors && !errs.terraceArea && !errs.kitchenType) {
+          setCurrentStep(4);
+          setTouched({});
+        }
+      }
+    }
+  };
+
+  const handlePrevStep = () => setCurrentStep(prev => prev - 1);
+
   return (
     <div className="form-section animate-fade-up animate-fade-up-2">
       <form className="form-card" onSubmit={handleSubmit}>
@@ -1072,91 +1141,82 @@ export default function PropertyForm({ onAnalyze }) {
           <div className="form-header-icon">⚡</div>
           <div className="form-header-text">
             <h3>Property Intelligence Input</h3>
-            <p>Fill all details — each field improves ML precision and differentiates your property</p>
+            <p>Step {currentStep} of 4 — {
+              currentStep === 1 ? "Location Context" :
+              currentStep === 2 ? "Property Identifier" :
+              currentStep === 3 ? "Specifications" : "Enhancements & Finalize"
+            }</p>
           </div>
         </div>
 
         <div className="form-body">
-
-          {/* ══ SECTION 1: Location ══ */}
-          <StepBadge n="1" label="Location Details" done={locDone} />
-          <div className="form-grid">
-
-            <div className="form-field">
-              <label className="form-label" htmlFor="state">State *</label>
-              <select id="state" className={`form-select ${errors.state ? 'input-error' : ''}`}
-                value={form.state} onChange={e => setField('state', e.target.value)}>
-                <option value="">— Select State —</option>
-                {STATES.map(s => <option key={s} value={s}>{s}</option>)}
-              </select>
-              <FieldError msg={errors.state} />
-            </div>
-
-            <div className="form-field">
-              <label className="form-label" htmlFor="city">City *</label>
-              <select id="city" className={`form-select ${errors.city ? 'input-error' : ''}`}
-                value={form.city} onChange={e => setField('city', e.target.value)} disabled={!form.state}>
-                <option value="">{form.state ? '— Select City —' : '— Select State first —'}</option>
-                {cities.map(c => <option key={c} value={c}>{c}</option>)}
-              </select>
-              <FieldError msg={errors.city} />
-            </div>
-
-            <div className="form-field">
-              <label className="form-label" htmlFor="locality">Locality / Area *</label>
-              <select id="locality" className={`form-select ${errors.locality ? 'input-error' : ''}`}
-                value={form.locality} onChange={e => setField('locality', e.target.value)} disabled={!form.city}>
-                <option value="">{form.city ? '— Select Locality —' : '— Select City first —'}</option>
-                {localities.map(l => <option key={l} value={l}>{l}</option>)}
-              </select>
-              <FieldError msg={errors.locality} />
-            </div>
-
-            <div className="form-field">
-              <label className="form-label" htmlFor="localityDemand">Locality Demand Level *</label>
-              <select id="localityDemand" className={`form-select ${errors.localityDemand ? 'input-error' : ''}`}
-                value={form.localityDemand} onChange={e => setField('localityDemand', e.target.value)}>
-                <option value="">— Select Demand Level —</option>
-                {DEMAND_LEVELS.map(d => <option key={d} value={d}>{d}</option>)}
-              </select>
-              <FieldError msg={errors.localityDemand} />
-            </div>
+          {/* Progress Indicator */}
+          <div style={{ display: 'flex', gap: '8px', marginBottom: '24px' }}>
+            {[1, 2, 3, 4].map(step => (
+              <div key={step} style={{
+                flex: 1,
+                height: '4px',
+                borderRadius: '2px',
+                background: step < currentStep ? 'var(--clr-accent-emerald)' : step === currentStep ? 'var(--clr-primary)' : 'rgba(255,255,255,0.1)',
+                transition: 'all var(--transition-base)'
+              }} />
+            ))}
           </div>
 
-          <div className="divider" />
+          {/* ══ SECTION 1: Location ══ */}
+          {currentStep === 1 && (
+            <div className="wizard-step animate-fade-up">
+              <StepBadge n="1" label="Location Details" done={locDone} />
+              <div className="form-grid">
 
-          {/* ══ SECTION 2: Property Identifier ══ */}
-          <StepBadge n="2" label="Property Identifier — Distinguish Your Property" done={identDone} />
+                <div className="form-field">
+                  <label className="form-label" htmlFor="state">State *</label>
+                  <select id="state" className={`form-select ${errors.state ? 'input-error' : ''}`}
+                    value={form.state} onChange={e => setField('state', e.target.value)}>
+                    <option value="">— Select State —</option>
+                    {STATES.map(s => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                  <FieldError msg={errors.state} />
+                </div>
 
-          {/* ── GATE: lock section 2 until step 1 is complete ── */}
-          {!locDone ? (
-            <div style={{
-              padding: '24px 20px', borderRadius: '14px', marginBottom: '20px',
-              background: 'rgba(15,20,35,0.5)',
-              border: '1px dashed rgba(255,255,255,0.10)',
-              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '14px',
-              textAlign: 'center',
-            }}>
-              <div style={{ fontSize: '28px' }}>🔒</div>
-              <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-secondary)' }}>
-                Complete the required steps first
-              </div>
-              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', justifyContent: 'center' }}>
-                <span style={{
-                  fontSize: '12px', fontWeight: 600, padding: '4px 12px', borderRadius: '20px',
-                  background: 'rgba(255,255,255,0.05)',
-                  color: 'var(--text-muted)',
-                  border: '1px solid rgba(255,255,255,0.08)',
-                }}>
-                  ○ Step 1 · Location
-                </span>
-              </div>
-              <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-                This section unlocks once Step 1 is filled
+                <div className="form-field">
+                  <label className="form-label" htmlFor="city">City *</label>
+                  <select id="city" className={`form-select ${errors.city ? 'input-error' : ''}`}
+                    value={form.city} onChange={e => setField('city', e.target.value)} disabled={!form.state}>
+                    <option value="">{form.state ? '— Select City —' : '— Select State first —'}</option>
+                    {cities.map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                  <FieldError msg={errors.city} />
+                </div>
+
+                <div className="form-field">
+                  <label className="form-label" htmlFor="locality">Locality / Area *</label>
+                  <select id="locality" className={`form-select ${errors.locality ? 'input-error' : ''}`}
+                    value={form.locality} onChange={e => setField('locality', e.target.value)} disabled={!form.city}>
+                    <option value="">{form.city ? '— Select Locality —' : '— Select City first —'}</option>
+                    {localities.map(l => <option key={l} value={l}>{l}</option>)}
+                  </select>
+                  <FieldError msg={errors.locality} />
+                </div>
+
+                <div className="form-field">
+                  <label className="form-label" htmlFor="localityDemand">Locality Demand Level *</label>
+                  <select id="localityDemand" className={`form-select ${errors.localityDemand ? 'input-error' : ''}`}
+                    value={form.localityDemand} onChange={e => setField('localityDemand', e.target.value)}>
+                    <option value="">— Select Demand Level —</option>
+                    {DEMAND_LEVELS.map(d => <option key={d} value={d}>{d}</option>)}
+                  </select>
+                  <FieldError msg={errors.localityDemand} />
+                </div>
               </div>
             </div>
-          ) : (
-            <>
+          )}
+
+          {/* ══ SECTION 2: Property Identifier ══ */}
+          {currentStep === 2 && (
+            <div className="wizard-step animate-fade-up">
+              <StepBadge n="2" label="Property Identifier — Distinguish Your Property" done={identDone} />
+              
               <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '16px', padding: '10px 14px', borderRadius: '8px', background: 'rgba(59,130,246,0.05)', border: '1px solid rgba(59,130,246,0.15)' }}>
                 💡 In the same locality there can be 10+ properties. These fields help the ML engine identify <strong style={{ color: '#60a5fa' }}>your specific property</strong> — not just an area average.
               </div>
@@ -1200,49 +1260,14 @@ export default function PropertyForm({ onAnalyze }) {
                 </div>
 
               </div>
-            </>
+            </div>
           )}
 
-
-          <div className="divider" />
-
           {/* ══ SECTION 3: Property Specifications (type-specific) ══ */}
-          <StepBadge n="3" label="Property Specifications" done={propDone} />
-
-          {/* ── GATE: lock section 3 until steps 1 & 2 are complete ── */}
-          {!(locDone && identDone) ? (
-            <div style={{
-              padding: '24px 20px', borderRadius: '14px', marginBottom: '20px',
-              background: 'rgba(15,20,35,0.5)',
-              border: '1px dashed rgba(255,255,255,0.10)',
-              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '14px',
-              textAlign: 'center',
-            }}>
-              <div style={{ fontSize: '28px' }}>🔒</div>
-              <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-secondary)' }}>
-                Complete the required steps first
-              </div>
-              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', justifyContent: 'center' }}>
-                {[
-                  { label: 'Step 1 · Location', done: locDone },
-                  { label: 'Step 2 · Property Identifier', done: identDone },
-                ].map(s => (
-                  <span key={s.label} style={{
-                    fontSize: '12px', fontWeight: 600, padding: '4px 12px', borderRadius: '20px',
-                    background: s.done ? 'rgba(52,211,153,0.12)' : 'rgba(255,255,255,0.05)',
-                    color: s.done ? '#34d399' : 'var(--text-muted)',
-                    border: `1px solid ${s.done ? 'rgba(52,211,153,0.3)' : 'rgba(255,255,255,0.08)'}`,
-                  }}>
-                    {s.done ? '✓' : '○'} {s.label}
-                  </span>
-                ))}
-              </div>
-              <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-                This section unlocks once Steps 1 &amp; 2 are filled
-              </div>
-            </div>
-          ) : (
-            <>
+          {currentStep === 3 && (
+            <div className="wizard-step animate-fade-up">
+              <StepBadge n="3" label="Property Specifications" done={propDone} />
+              
               {form.propertyType && (
                 <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '16px', padding: '12px 16px', borderRadius: '8px', background: 'rgba(245,158,11,0.05)', border: '1px solid rgba(245,158,11,0.15)' }}>
                   <div style={{ marginBottom: '8px', fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)' }}>
@@ -1252,335 +1277,225 @@ export default function PropertyForm({ onAnalyze }) {
                 </div>
               )}
               <TypeSpecFields form={form} errors={errors} setField={setField} />
-            </>
+            </div>
           )}
 
-
-          <div className="divider" />
-
           {/* ══ SECTION 4: Optional Enhancements (type-specific) ══ */}
-          <StepBadge n="4" label="Optional Enhancements" done={false} />
-
-          {/* ── GATE: lock section 4 until prerequisites are met ── */}
-          {!propDone ? (
-            <div style={{
-              padding: '24px 20px', borderRadius: '14px', marginBottom: '20px',
-              background: 'rgba(15,20,35,0.5)',
-              border: '1px dashed rgba(255,255,255,0.10)',
-              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '14px',
-              textAlign: 'center',
-            }}>
-              <div style={{ fontSize: '28px' }}>🔒</div>
-              <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-secondary)' }}>
-                Complete the required steps first
-              </div>
-              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', justifyContent: 'center' }}>
-                {[
-                  { label: 'Step 1 · Location', done: locDone },
-                  { label: 'Step 2 · Property Identifier', done: identDone },
-                  { label: 'Step 3 · Specifications', done: propDone },
-                ].map(s => (
-                  <span key={s.label} style={{
-                    fontSize: '12px', fontWeight: 600, padding: '4px 12px', borderRadius: '20px',
-                    background: s.done ? 'rgba(52,211,153,0.12)' : 'rgba(255,255,255,0.05)',
-                    color: s.done ? '#34d399' : 'var(--text-muted)',
-                    border: `1px solid ${s.done ? 'rgba(52,211,153,0.3)' : 'rgba(255,255,255,0.08)'}`,
-                  }}>
-                    {s.done ? '✓' : '○'} {s.label}
-                  </span>
-                ))}
-              </div>
-              <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-                This section unlocks once all required fields in Steps 1–3 are filled
-              </div>
-            </div>
-          ) : (
-            <>
+          {currentStep === 4 && (
+            <div className="wizard-step animate-fade-up">
+              <StepBadge n="4" label="Optional Enhancements" done={false} />
+              
               {form.propertyType && (
                 <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '16px', padding: '8px 14px', borderRadius: '8px', background: 'rgba(139,92,246,0.05)', border: '1px solid rgba(139,92,246,0.15)' }}>
                   ✨ Optional fields — each one improves ML accuracy and narrows the price estimate
                 </div>
               )}
 
-          {/* ── type-based Section 4 content ── */}
-          {(() => {
-            const pt = form.propertyType;
-            const isVillaRH  = pt === 'Villa' || pt === 'Row House';
-            const isPH       = pt === 'Penthouse';
-            const isBF       = pt === 'Builder Floor';
-            const isStudio   = pt === 'Studio';
-            const isLand     = pt === 'Plot / Land';
+              {/* ── type-based Section 4 content ── */}
+              {(() => {
+                const pt = form.propertyType;
+                const isVillaRH  = pt === 'Villa' || pt === 'Row House';
+                const isPH       = pt === 'Penthouse';
+                const isBF       = pt === 'Builder Floor';
+                const isStudio   = pt === 'Studio';
+                const isLand     = pt === 'Plot / Land';
 
-            const Tog = ({ id, active, onClick, label }) => (
-              <button type="button" id={id}
-                className={`toggle-btn ${active ? 'active' : ''}`}
-                onClick={onClick}>{label}</button>
-            );
+                const Tog = ({ id, active, onClick, label }) => (
+                  <button type="button" id={id}
+                    className={`toggle-btn ${active ? 'active' : ''}`}
+                    onClick={onClick}>{label}</button>
+                );
 
-            // ── PLOT / LAND ────────────────────────────────────────────────
-            if (isLand) return (
-              <>
-                <div className="form-field" style={{ marginBottom: '20px' }}>
-                  <label className="form-label">Plot Features &amp; Connectivity</label>
-                  <div className="form-toggle-group" style={{ flexWrap: 'wrap' }}>
-                    <Tog id="corner-land" active={form.cornerUnit === true}
-                      onClick={() => setField('cornerUnit', !form.cornerUnit)}
-                      label="📐 Corner Plot (+10%)" />
-                    <Tog id="gated-land" active={form.gatedSociety === true}
-                      onClick={() => setField('gatedSociety', form.gatedSociety === true ? null : true)}
-                      label="🔒 Gated Plotted Colony (+8%)" />
-                    <Tog id="water-conn" active={form.waterAvailable === true}
-                      onClick={() => setField('waterAvailable', form.waterAvailable === true ? null : true)}
-                      label="💧 Water Connection Available (+4%)" />
-                    <Tog id="elec-conn" active={form.electricityAvailable === true}
-                      onClick={() => setField('electricityAvailable', form.electricityAvailable === true ? null : true)}
-                      label="⚡ Electricity Connected (+3%)" />
-                    <Tog id="sewer-conn" active={form.sewerAvailable === true}
-                      onClick={() => setField('sewerAvailable', form.sewerAvailable === true ? null : true)}
-                      label="🚰 Sewage / Drainage (+3%)" />
-                  </div>
-                </div>
-                <div className="form-field" style={{ marginBottom: '20px' }}>
-                  <label className="form-label">
-                    Colony / Development Amenities
-                    <span style={{ color: 'var(--text-muted)', fontWeight: 400, marginLeft: '6px', fontSize: '11px' }}>(select all that apply)</span>
-                  </label>
-                  <div className="form-toggle-group" style={{ flexWrap: 'wrap' }}>
-                    {['Compound Wall / Fencing', 'Street Lights', 'Paved Approach Road', 'Underground Utilities'].map(a => (
-                      <button key={a} type="button"
-                        className={`toggle-btn ${form.amenities.includes(a) ? 'active' : ''}`}
-                        onClick={() => toggleAmenity(a)}
-                        id={`amenity-${a.replace(/[\s/]+/g, '-').toLowerCase()}`}>{a}</button>
-                    ))}
-                  </div>
-                </div>
-              </>
-            );
+                // ── PLOT / LAND ────────────────────────────────────────────────
+                if (isLand) return (
+                  <>
+                    <div className="form-field" style={{ marginBottom: '20px' }}>
+                      <label className="form-label">Plot Features &amp; Connectivity</label>
+                      <div className="form-toggle-group" style={{ flexWrap: 'wrap' }}>
+                        <Tog id="corner-land" active={form.cornerUnit === true} onClick={() => setField('cornerUnit', !form.cornerUnit)} label="📐 Corner Plot (+10%)" />
+                        <Tog id="gated-land" active={form.gatedSociety === true} onClick={() => setField('gatedSociety', form.gatedSociety === true ? null : true)} label="🔒 Gated Plotted Colony (+8%)" />
+                        <Tog id="water-conn" active={form.waterAvailable === true} onClick={() => setField('waterAvailable', form.waterAvailable === true ? null : true)} label="💧 Water Connection Available (+4%)" />
+                        <Tog id="elec-conn" active={form.electricityAvailable === true} onClick={() => setField('electricityAvailable', form.electricityAvailable === true ? null : true)} label="⚡ Electricity Connected (+3%)" />
+                        <Tog id="sewer-conn" active={form.sewerAvailable === true} onClick={() => setField('sewerAvailable', form.sewerAvailable === true ? null : true)} label="🚰 Sewage / Drainage (+3%)" />
+                      </div>
+                    </div>
+                    <div className="form-field" style={{ marginBottom: '20px' }}>
+                      <label className="form-label">
+                        Colony / Development Amenities
+                        <span style={{ color: 'var(--text-muted)', fontWeight: 400, marginLeft: '6px', fontSize: '11px' }}>(select all that apply)</span>
+                      </label>
+                      <div className="form-toggle-group" style={{ flexWrap: 'wrap' }}>
+                        {['Compound Wall / Fencing', 'Street Lights', 'Paved Approach Road', 'Underground Utilities'].map(a => (
+                          <button key={a} type="button" className={`toggle-btn ${form.amenities.includes(a) ? 'active' : ''}`} onClick={() => toggleAmenity(a)} id={`amenity-${a.replace(/[\s/]+/g, '-').toLowerCase()}`}>{a}</button>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                );
 
-            // ── VILLA / ROW HOUSE ──────────────────────────────────────────
-            if (isVillaRH) return (
-              <>
-                <div className="form-field" style={{ marginBottom: '20px' }}>
-                  <label className="form-label">Community / Colony Features</label>
-                  <div className="form-toggle-group" style={{ flexWrap: 'wrap' }}>
-                    <Tog id="gated-community" active={form.gatedSociety === true}
-                      onClick={() => setField('gatedSociety', form.gatedSociety === true ? null : true)}
-                      label="🔒 Gated Community (+5%)" />
-                    <Tog id="sec-guard" active={form.liftAvailable === true}
-                      onClick={() => setField('liftAvailable', form.liftAvailable === true ? null : true)}
-                      label="👮 24/7 Security Guard" />
-                  </div>
-                </div>
-                <div className="form-field" style={{ marginBottom: '20px' }}>
-                  <label className="form-label">
-                    Community Amenities
-                    <span style={{ color: 'var(--text-muted)', fontWeight: 400, marginLeft: '6px', fontSize: '11px' }}>(select all that apply)</span>
-                  </label>
-                  <div className="form-toggle-group" style={{ flexWrap: 'wrap' }}>
-                    {['Clubhouse', 'Swimming Pool', 'Tennis / Sports Court', 'Jogging Track',
-                      'Children Play Area', 'Piped Gas', 'Water Harvesting', 'Garbage Collection'].map(a => (
-                      <button key={a} type="button"
-                        className={`toggle-btn ${form.amenities.includes(a) ? 'active' : ''}`}
-                        onClick={() => toggleAmenity(a)}
-                        id={`amenity-${a.replace(/[\s/]+/g, '-').toLowerCase()}`}>{a}</button>
-                    ))}
-                  </div>
-                </div>
-              </>
-            );
+                // ── VILLA / ROW HOUSE ──────────────────────────────────────────
+                if (isVillaRH) return (
+                  <>
+                    <div className="form-field" style={{ marginBottom: '20px' }}>
+                      <label className="form-label">Community / Colony Features</label>
+                      <div className="form-toggle-group" style={{ flexWrap: 'wrap' }}>
+                        <Tog id="gated-community" active={form.gatedSociety === true} onClick={() => setField('gatedSociety', form.gatedSociety === true ? null : true)} label="🔒 Gated Community (+5%)" />
+                        <Tog id="sec-guard" active={form.liftAvailable === true} onClick={() => setField('liftAvailable', form.liftAvailable === true ? null : true)} label="👮 24/7 Security Guard" />
+                      </div>
+                    </div>
+                    <div className="form-field" style={{ marginBottom: '20px' }}>
+                      <label className="form-label">
+                        Community Amenities
+                        <span style={{ color: 'var(--text-muted)', fontWeight: 400, marginLeft: '6px', fontSize: '11px' }}>(select all that apply)</span>
+                      </label>
+                      <div className="form-toggle-group" style={{ flexWrap: 'wrap' }}>
+                        {['Clubhouse', 'Swimming Pool', 'Tennis / Sports Court', 'Jogging Track', 'Children Play Area', 'Piped Gas', 'Water Harvesting', 'Garbage Collection'].map(a => (
+                          <button key={a} type="button" className={`toggle-btn ${form.amenities.includes(a) ? 'active' : ''}`} onClick={() => toggleAmenity(a)} id={`amenity-${a.replace(/[\s/]+/g, '-').toLowerCase()}`}>{a}</button>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                );
 
-            // ── PENTHOUSE ──────────────────────────────────────────────────
-            if (isPH) return (
-              <>
-                <div className="form-field" style={{ marginBottom: '20px' }}>
-                  <label className="form-label">Building Luxury Features</label>
-                  <div className="form-toggle-group" style={{ flexWrap: 'wrap' }}>
-                    <Tog id="gated-ph" active={form.gatedSociety === true}
-                      onClick={() => setField('gatedSociety', form.gatedSociety === true ? null : true)}
-                      label="🔒 Secured / Gated Premises (+5%)" />
-                    <Tog id="concierge" active={form.liftAvailable === true}
-                      onClick={() => setField('liftAvailable', form.liftAvailable === true ? null : true)}
-                      label="🛎 24/7 Concierge Service (+5%)" />
-                    <Tog id="valet" active={form.parking === true}
-                      onClick={() => setField('parking', form.parking === true ? null : true)}
-                      label="🚗 Valet / Reserved Parking (+3%)" />
+                // ── PENTHOUSE ──────────────────────────────────────────────────
+                if (isPH) return (
+                  <>
+                    <div className="form-field" style={{ marginBottom: '20px' }}>
+                      <label className="form-label">Building Luxury Features</label>
+                      <div className="form-toggle-group" style={{ flexWrap: 'wrap' }}>
+                        <Tog id="gated-ph" active={form.gatedSociety === true} onClick={() => setField('gatedSociety', form.gatedSociety === true ? null : true)} label="🔒 Secured / Gated Premises (+5%)" />
+                        <Tog id="concierge" active={form.liftAvailable === true} onClick={() => setField('liftAvailable', form.liftAvailable === true ? null : true)} label="🛎 24/7 Concierge Service (+5%)" />
+                        <Tog id="valet" active={form.parking === true} onClick={() => setField('parking', form.parking === true ? null : true)} label="🚗 Valet / Reserved Parking (+3%)" />
+                      </div>
+                    </div>
+                    <div className="form-field" style={{ marginBottom: '20px' }}>
+                      <label className="form-label">
+                        Premium Building Amenities
+                        <span style={{ color: 'var(--text-muted)', fontWeight: 400, marginLeft: '6px', fontSize: '11px' }}>(select all that apply)</span>
+                      </label>
+                      <div className="form-toggle-group" style={{ flexWrap: 'wrap' }}>
+                        {['Gym / Fitness Center', 'Spa / Wellness', 'Swimming Pool', 'Rooftop Garden', 'Business Center', 'Clubhouse', 'EV Charging', 'Helipad Access'].map(a => (
+                          <button key={a} type="button" className={`toggle-btn ${form.amenities.includes(a) ? 'active' : ''}`} onClick={() => toggleAmenity(a)} id={`amenity-${a.replace(/[\s/]+/g, '-').toLowerCase()}`}>{a}</button>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                );
 
-                  </div>
-                </div>
-                <div className="form-field" style={{ marginBottom: '20px' }}>
-                  <label className="form-label">
-                    Premium Building Amenities
-                    <span style={{ color: 'var(--text-muted)', fontWeight: 400, marginLeft: '6px', fontSize: '11px' }}>(select all that apply)</span>
-                  </label>
-                  <div className="form-toggle-group" style={{ flexWrap: 'wrap' }}>
-                    {['Gym / Fitness Center', 'Spa / Wellness', 'Swimming Pool', 'Rooftop Garden',
-                      'Business Center', 'Clubhouse', 'EV Charging', 'Helipad Access'].map(a => (
-                      <button key={a} type="button"
-                        className={`toggle-btn ${form.amenities.includes(a) ? 'active' : ''}`}
-                        onClick={() => toggleAmenity(a)}
-                        id={`amenity-${a.replace(/[\s/]+/g, '-').toLowerCase()}`}>{a}</button>
-                    ))}
-                  </div>
-                </div>
-              </>
-            );
+                // ── BUILDER FLOOR ──────────────────────────────────────────────
+                if (isBF) return (
+                  <>
+                    <div className="form-field" style={{ marginBottom: '20px' }}>
+                      <label className="form-label">Colony / Building Features</label>
+                      <div className="form-toggle-group" style={{ flexWrap: 'wrap' }}>
+                        <Tog id="gated-col" active={form.gatedSociety === true} onClick={() => setField('gatedSociety', form.gatedSociety === true ? null : true)} label="🔒 Gated Colony / Park (+4%)" />
+                        <Tog id="lift-bf" active={form.liftAvailable === true} onClick={() => setField('liftAvailable', form.liftAvailable === true ? null : true)} label="🛗 Lift in Building (+2%)" />
+                        <Tog id="no-lift-bf" active={form.liftAvailable === false} onClick={() => setField('liftAvailable', form.liftAvailable === false ? null : false)} label="🚶 No Lift (affects high floors)" />
+                        <Tog id="corner-bf" active={form.cornerUnit === true} onClick={() => setField('cornerUnit', !form.cornerUnit)} label="📐 Corner Plot / Wing (+3%)" />
+                      </div>
+                    </div>
+                    <div className="form-field" style={{ marginBottom: '20px' }}>
+                      <label className="form-label">
+                        Building / Colony Amenities
+                        <span style={{ color: 'var(--text-muted)', fontWeight: 400, marginLeft: '6px', fontSize: '11px' }}>(select all that apply)</span>
+                      </label>
+                      <div className="form-toggle-group" style={{ flexWrap: 'wrap' }}>
+                        {['Power Backup', 'Security / Watchman', 'CCTV', 'Water Tank / Borewell', 'Piped Gas', 'Intercom / Video Bell', 'Visitor Parking', 'Park Nearby'].map(a => (
+                          <button key={a} type="button" className={`toggle-btn ${form.amenities.includes(a) ? 'active' : ''}`} onClick={() => toggleAmenity(a)} id={`amenity-${a.replace(/[\s/]+/g, '-').toLowerCase()}`}>{a}</button>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="form-field" style={{ marginBottom: '20px' }}>
+                      <label className="form-label">
+                        Parking
+                        <span style={{ color: 'var(--text-muted)', fontWeight: 400, marginLeft: '6px', fontSize: '11px' }}>(optional — improves estimate)</span>
+                      </label>
+                      <div className="form-toggle-group">
+                        <Tog id="parking-yes-bf" active={form.parking === true} onClick={() => setField('parking', form.parking === true ? null : true)} label="✓ Dedicated Parking" />
+                        <Tog id="parking-no-bf" active={form.parking === false} onClick={() => setField('parking', form.parking === false ? null : false)} label="✕ Street / No Parking" />
+                      </div>
+                    </div>
+                  </>
+                );
 
-            // ── BUILDER FLOOR ──────────────────────────────────────────────
-            if (isBF) return (
-              <>
-                <div className="form-field" style={{ marginBottom: '20px' }}>
-                  <label className="form-label">Colony / Building Features</label>
-                  <div className="form-toggle-group" style={{ flexWrap: 'wrap' }}>
-                    <Tog id="gated-col" active={form.gatedSociety === true}
-                      onClick={() => setField('gatedSociety', form.gatedSociety === true ? null : true)}
-                      label="🔒 Gated Colony / Park (+4%)" />
-                    <Tog id="lift-bf" active={form.liftAvailable === true}
-                      onClick={() => setField('liftAvailable', form.liftAvailable === true ? null : true)}
-                      label="🛗 Lift in Building (+2%)" />
-                    <Tog id="no-lift-bf" active={form.liftAvailable === false}
-                      onClick={() => setField('liftAvailable', form.liftAvailable === false ? null : false)}
-                      label="🚶 No Lift (affects high floors)" />
-                    <Tog id="corner-bf" active={form.cornerUnit === true}
-                      onClick={() => setField('cornerUnit', !form.cornerUnit)}
-                      label="📐 Corner Plot / Wing (+3%)" />
-                  </div>
-                </div>
-                <div className="form-field" style={{ marginBottom: '20px' }}>
-                  <label className="form-label">
-                    Building / Colony Amenities
-                    <span style={{ color: 'var(--text-muted)', fontWeight: 400, marginLeft: '6px', fontSize: '11px' }}>(select all that apply)</span>
-                  </label>
-                  <div className="form-toggle-group" style={{ flexWrap: 'wrap' }}>
-                    {['Power Backup', 'Security / Watchman', 'CCTV', 'Water Tank / Borewell',
-                      'Piped Gas', 'Intercom / Video Bell', 'Visitor Parking', 'Park Nearby'].map(a => (
-                      <button key={a} type="button"
-                        className={`toggle-btn ${form.amenities.includes(a) ? 'active' : ''}`}
-                        onClick={() => toggleAmenity(a)}
-                        id={`amenity-${a.replace(/[\s/]+/g, '-').toLowerCase()}`}>{a}</button>
-                    ))}
-                  </div>
-                </div>
-                <div className="form-field" style={{ marginBottom: '20px' }}>
-                  <label className="form-label">
-                    Parking
-                    <span style={{ color: 'var(--text-muted)', fontWeight: 400, marginLeft: '6px', fontSize: '11px' }}>(optional — improves estimate)</span>
-                  </label>
-                  <div className="form-toggle-group">
-                    <Tog id="parking-yes-bf" active={form.parking === true}
-                      onClick={() => setField('parking', form.parking === true ? null : true)}
-                      label="✓ Dedicated Parking" />
-                    <Tog id="parking-no-bf" active={form.parking === false}
-                      onClick={() => setField('parking', form.parking === false ? null : false)}
-                      label="✕ Street / No Parking" />
-                  </div>
-                </div>
-              </>
-            );
+                // ── STUDIO ─────────────────────────────────────────────────────
+                if (isStudio) return (
+                  <>
+                    <div className="form-field" style={{ marginBottom: '20px' }}>
+                      <label className="form-label">Building Features</label>
+                      <div className="form-toggle-group" style={{ flexWrap: 'wrap' }}>
+                        <Tog id="gated-st" active={form.gatedSociety === true} onClick={() => setField('gatedSociety', form.gatedSociety === true ? null : true)} label="🔒 Secured Building (+3%)" />
+                        <Tog id="lift-st" active={form.liftAvailable === true} onClick={() => setField('liftAvailable', form.liftAvailable === true ? null : true)} label="🛗 Lift / Elevator (+2%)" />
+                        <Tog id="parking-st" active={form.parking === true} onClick={() => setField('parking', form.parking === true ? null : true)} label="🅿 Parking Available" />
+                      </div>
+                    </div>
+                    <div className="form-field" style={{ marginBottom: '20px' }}>
+                      <label className="form-label">
+                        Building Amenities
+                        <span style={{ color: 'var(--text-muted)', fontWeight: 400, marginLeft: '6px', fontSize: '11px' }}>(select all that apply)</span>
+                      </label>
+                      <div className="form-toggle-group" style={{ flexWrap: 'wrap' }}>
+                        {['Security', 'Power Backup', 'CCTV', 'Laundry / Washing Area', 'Co-working Space', 'Cafeteria / Canteen', 'Gym', 'High-Speed Internet'].map(a => (
+                          <button key={a} type="button" className={`toggle-btn ${form.amenities.includes(a) ? 'active' : ''}`} onClick={() => toggleAmenity(a)} id={`amenity-${a.replace(/[\s/]+/g, '-').toLowerCase()}`}>{a}</button>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                );
 
-            // ── STUDIO ─────────────────────────────────────────────────────
-            if (isStudio) return (
-              <>
-                <div className="form-field" style={{ marginBottom: '20px' }}>
-                  <label className="form-label">Building Features</label>
-                  <div className="form-toggle-group" style={{ flexWrap: 'wrap' }}>
-                    <Tog id="gated-st" active={form.gatedSociety === true}
-                      onClick={() => setField('gatedSociety', form.gatedSociety === true ? null : true)}
-                      label="🔒 Secured Building (+3%)" />
-                    <Tog id="lift-st" active={form.liftAvailable === true}
-                      onClick={() => setField('liftAvailable', form.liftAvailable === true ? null : true)}
-                      label="🛗 Lift / Elevator (+2%)" />
-                    <Tog id="parking-st" active={form.parking === true}
-                      onClick={() => setField('parking', form.parking === true ? null : true)}
-                      label="🅿 Parking Available" />
-                  </div>
-                </div>
-                <div className="form-field" style={{ marginBottom: '20px' }}>
-                  <label className="form-label">
-                    Building Amenities
-                    <span style={{ color: 'var(--text-muted)', fontWeight: 400, marginLeft: '6px', fontSize: '11px' }}>(select all that apply)</span>
-                  </label>
-                  <div className="form-toggle-group" style={{ flexWrap: 'wrap' }}>
-                    {['Security', 'Power Backup', 'CCTV', 'Laundry / Washing Area',
-                      'Co-working Space', 'Cafeteria / Canteen', 'Gym', 'High-Speed Internet'].map(a => (
-                      <button key={a} type="button"
-                        className={`toggle-btn ${form.amenities.includes(a) ? 'active' : ''}`}
-                        onClick={() => toggleAmenity(a)}
-                        id={`amenity-${a.replace(/[\s/]+/g, '-').toLowerCase()}`}>{a}</button>
-                    ))}
-                  </div>
-                </div>
-              </>
-            );
+                // ── APARTMENT (default) ────────────────────────────────────────
+                return (
+                  <>
+                    <div className="form-field" style={{ marginBottom: '20px' }}>
+                      <label className="form-label">Society / Building Features</label>
+                      <div className="form-toggle-group" style={{ flexWrap: 'wrap' }}>
+                        <Tog id="gated-yes" active={form.gatedSociety === true} onClick={() => setField('gatedSociety', form.gatedSociety === true ? null : true)} label="🔒 Gated Society (+5%)" />
+                        <Tog id="corner-unit" active={form.cornerUnit === true} onClick={() => setField('cornerUnit', !form.cornerUnit)} label="📐 Corner / End Unit (+3%)" />
+                        <Tog id="lift-yes" active={form.liftAvailable === true} onClick={() => setField('liftAvailable', form.liftAvailable === true ? null : true)} label="🛗 Lift / Elevator (+2%)" />
+                        <Tog id="lift-no" active={form.liftAvailable === false} onClick={() => setField('liftAvailable', form.liftAvailable === false ? null : false)} label="🚶 No Lift" />
+                      </div>
+                    </div>
+                    <div className="form-field" style={{ marginBottom: '20px' }}>
+                      <label className="form-label">
+                        Parking Availability
+                        <span style={{ color: 'var(--text-muted)', fontWeight: 400, marginLeft: '6px', fontSize: '11px' }}>(optional — improves estimate)</span>
+                      </label>
+                      <div className="form-toggle-group">
+                        <Tog id="parking-yes" active={form.parking === true} onClick={() => setField('parking', form.parking === true ? null : true)} label="✓ Yes, Covered Parking (+4%)" />
+                        <Tog id="parking-no" active={form.parking === false} onClick={() => setField('parking', form.parking === false ? null : false)} label="✕ No Parking" />
+                      </div>
+                    </div>
+                    <div className="form-field" style={{ marginBottom: '20px' }}>
+                      <label className="form-label">
+                        Society Amenities
+                        <span style={{ color: 'var(--text-muted)', fontWeight: 400, marginLeft: '6px', fontSize: '11px' }}>(select all that apply)</span>
+                      </label>
+                      <div className="form-toggle-group" style={{ flexWrap: 'wrap' }}>
+                        {['Swimming Pool', 'Gym', 'Clubhouse', 'Security', 'Garden', 'Power Backup', 'CCTV', 'Children Play Area', 'Intercom', 'Visitor Parking'].map(a => (
+                          <button key={a} type="button" className={`toggle-btn ${form.amenities.includes(a) ? 'active' : ''}`} onClick={() => toggleAmenity(a)} id={`amenity-${a.replace(/\s+/g, '-').toLowerCase()}`}>{a}</button>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                );
+              })()}
 
-            // ── APARTMENT (default) ────────────────────────────────────────
-            return (
-              <>
-                <div className="form-field" style={{ marginBottom: '20px' }}>
-                  <label className="form-label">Society / Building Features</label>
-                  <div className="form-toggle-group" style={{ flexWrap: 'wrap' }}>
-                    <Tog id="gated-yes" active={form.gatedSociety === true}
-                      onClick={() => setField('gatedSociety', form.gatedSociety === true ? null : true)}
-                      label="🔒 Gated Society (+5%)" />
-                    <Tog id="corner-unit" active={form.cornerUnit === true}
-                      onClick={() => setField('cornerUnit', !form.cornerUnit)}
-                      label="📐 Corner / End Unit (+3%)" />
-                    <Tog id="lift-yes" active={form.liftAvailable === true}
-                      onClick={() => setField('liftAvailable', form.liftAvailable === true ? null : true)}
-                      label="🛗 Lift / Elevator (+2%)" />
-                    <Tog id="lift-no" active={form.liftAvailable === false}
-                      onClick={() => setField('liftAvailable', form.liftAvailable === false ? null : false)}
-                      label="🚶 No Lift" />
-                  </div>
-                </div>
-                <div className="form-field" style={{ marginBottom: '20px' }}>
-                  <label className="form-label">
-                    Parking Availability
-                    <span style={{ color: 'var(--text-muted)', fontWeight: 400, marginLeft: '6px', fontSize: '11px' }}>(optional — improves estimate)</span>
-                  </label>
-                  <div className="form-toggle-group">
-                    <Tog id="parking-yes" active={form.parking === true}
-                      onClick={() => setField('parking', form.parking === true ? null : true)}
-                      label="✓ Yes, Covered Parking (+4%)" />
-                    <Tog id="parking-no" active={form.parking === false}
-                      onClick={() => setField('parking', form.parking === false ? null : false)}
-                      label="✕ No Parking" />
-                  </div>
-                </div>
-                <div className="form-field" style={{ marginBottom: '20px' }}>
-                  <label className="form-label">
-                    Society Amenities
-                    <span style={{ color: 'var(--text-muted)', fontWeight: 400, marginLeft: '6px', fontSize: '11px' }}>(select all that apply)</span>
-                  </label>
-                  <div className="form-toggle-group" style={{ flexWrap: 'wrap' }}>
-                    {['Swimming Pool', 'Gym', 'Clubhouse', 'Security', 'Garden', 'Power Backup',
-                      'CCTV', 'Children Play Area', 'Intercom', 'Visitor Parking'].map(a => (
-                      <button key={a} type="button"
-                        className={`toggle-btn ${form.amenities.includes(a) ? 'active' : ''}`}
-                        onClick={() => toggleAmenity(a)}
-                        id={`amenity-${a.replace(/\s+/g, '-').toLowerCase()}`}>{a}</button>
-                    ))}
-                  </div>
-                </div>
-              </>
-            );
-          })()}
-
-          {/* Broker Quote — inside unlocked gate */}
-          <div className="form-field" style={{ marginBottom: '8px' }}>
-            <label className="form-label" htmlFor="brokerQuote">
-              Broker / Seller Asking Price (₹)
-              <span style={{ color: 'var(--text-muted)', fontWeight: 400, marginLeft: '6px', fontSize: '11px' }}>
-                (enables negotiation analysis)
-              </span>
-            </label>
-            <input id="brokerQuote" type="number" onKeyDown={(e) => ['e', 'E', '+', '-'].includes(e.key) && e.preventDefault()}
-              className={`form-input ${errors.brokerQuote ? 'input-error' : ''}`}
-              style={{ maxWidth: '380px' }}
-              placeholder="e.g. 85,00,000"
-              value={form.brokerQuote} onChange={e => setField('brokerQuote', e.target.value)} />
-            <FieldError msg={errors.brokerQuote} />
-          </div>
-            </>
+              {/* Broker Quote */}
+              <div className="form-field" style={{ marginBottom: '8px', marginTop: '20px' }}>
+                <label className="form-label" htmlFor="brokerQuote">
+                  Broker / Seller Asking Price (₹)
+                  <span style={{ color: 'var(--text-muted)', fontWeight: 400, marginLeft: '6px', fontSize: '11px' }}>
+                    (enables negotiation analysis)
+                  </span>
+                </label>
+                <input id="brokerQuote" type="number" onKeyDown={(e) => ['e', 'E', '+', '-'].includes(e.key) && e.preventDefault()}
+                  className={`form-input ${errors.brokerQuote ? 'input-error' : ''}`}
+                  style={{ maxWidth: '380px' }}
+                  placeholder="e.g. 85,00,000"
+                  value={form.brokerQuote} onChange={e => setField('brokerQuote', e.target.value)} />
+                <FieldError msg={errors.brokerQuote} />
+              </div>
+            </div>
           )}
 
           {/* Live Property Card Preview */}
@@ -1593,20 +1508,31 @@ export default function PropertyForm({ onAnalyze }) {
               background: 'rgba(244,63,94,0.06)', border: '1px solid rgba(244,63,94,0.3)',
               fontSize: '13px', color: '#fb7185',
             }}>
-              ⚠ {totalErrors} field{totalErrors > 1 ? 's need' : ' needs'} attention before running the analysis.
+              ⚠ {totalErrors} field{totalErrors > 1 ? 's need' : ' needs'} attention before continuing.
             </div>
           )}
 
           {/* Actions */}
-          <div className="form-actions" style={{ marginTop: '20px' }}>
-            <button type="submit" className="btn-primary" id="analyze-btn"
-              style={{ opacity: totalErrors > 0 ? 0.55 : 1 }}>
-              <span>🧠</span> Run Intelligence Engine
-            </button>
-            <button type="button" className="btn-secondary" id="reset-btn"
-              onClick={() => { setForm(DEFAULT_FORM); setErrors({}); setTouched({}); }}>
-              Reset
-            </button>
+          <div className="form-actions" style={{ marginTop: '30px', borderTop: '1px solid var(--clr-border)', paddingTop: '24px', justifyContent: 'space-between' }}>
+            {currentStep > 1 ? (
+              <button type="button" className="btn-secondary" onClick={handlePrevStep}>
+                ← Back
+              </button>
+            ) : (
+              <button type="button" className="btn-secondary" onClick={() => { setForm(DEFAULT_FORM); setErrors({}); setTouched({}); }}>
+                Reset Form
+              </button>
+            )}
+
+            {currentStep < 4 ? (
+              <button type="button" className="btn-primary" onClick={handleNextStep}>
+                Next Step →
+              </button>
+            ) : (
+              <button type="submit" className="btn-primary" id="analyze-btn" style={{ opacity: totalErrors > 0 ? 0.55 : 1 }}>
+                <span>🧠</span> Run Intelligence Engine
+              </button>
+            )}
           </div>
 
         </div>

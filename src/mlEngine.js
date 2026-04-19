@@ -195,27 +195,22 @@ export async function runMLEngine(inputs) {
 
   let estimatedPrice = null;
   let backendUsed = false;
+  let backendConfidence = null;
 
   // 1. Try to fetch from the newly created Python Backend (Phase 2)
   try {
     const response = await fetch('http://127.0.0.1:8000/predict', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        city: city || 'Bangalore',
-        propertyType: propertyType || 'Apartment',
-        bhk: parseInt(bhk) || 0,
-        bathrooms: parseInt(bathrooms) || 0,
-        area: parseFloat(area || plotArea || 0),
-        age: parseInt(age) || 0
-      })
+      body: JSON.stringify(inputs)
     });
 
     if (response.ok) {
       const data = await response.json();
       estimatedPrice = data.estimatedPrice;
+      backendConfidence = data.confidenceScore;
       backendUsed = true;
-      console.log("✅ ML Prediction from Backend:", estimatedPrice);
+      console.log("✅ ML Prediction from Backend:", estimatedPrice, "Confidence:", backendConfidence);
     }
   } catch (err) {
     console.warn("⚠️ Python Backend offline. Falling back to local JS simulation.");
@@ -384,15 +379,18 @@ export async function runMLEngine(inputs) {
   const priceMin = Math.round(estimatedPrice * (1 - spreadFactor));
   const priceMax = Math.round(estimatedPrice * (1 + spreadFactor));
 
-  // Confidence — more specific inputs = higher confidence
-  const typeDetailBonus = (propertyType !== 'Apartment' ? 3 : 0)
-    + (facing ? 2 : 0) + (gatedSociety !== null ? 1 : 0)
-    + (Number(plotArea) > 0 ? 3 : 0) + (Number(terraceArea) > 0 ? 3 : 0)
-    + (independentEntry !== null ? 2 : 0) + (managedApartment !== null ? 2 : 0);
-  const confidenceScore = Math.min(100, Math.round(
-    58 + infraScore * 25 + (localityDemand === 'Premium' || localityDemand === 'High' ? 8 : 0)
-    - (age > 20 ? 5 : 0) + typeDetailBonus
-  ));
+  // Confidence — use real mathematical variance from backend if available, else fallback
+  let confidenceScore = backendConfidence;
+  if (confidenceScore === null) {
+    const typeDetailBonus = (propertyType !== 'Apartment' ? 3 : 0)
+      + (facing ? 2 : 0) + (gatedSociety !== null ? 1 : 0)
+      + (Number(plotArea) > 0 ? 3 : 0) + (Number(terraceArea) > 0 ? 3 : 0)
+      + (independentEntry !== null ? 2 : 0) + (managedApartment !== null ? 2 : 0);
+    confidenceScore = Math.min(100, Math.round(
+      58 + infraScore * 25 + (localityDemand === 'Premium' || localityDemand === 'High' ? 8 : 0)
+      - (age > 20 ? 5 : 0) + typeDetailBonus
+    ));
+  }
 
   const demandScore   = Math.round(demandMultiplier * 65 + infraScore * 20);
   const liquidityDays = Math.round(

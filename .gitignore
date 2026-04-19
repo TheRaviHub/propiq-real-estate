@@ -23,6 +23,7 @@ yarn-error.log*
 
 # Python
 backend/env/
+backend/env2/
 backend/__pycache__/
 backend/model.pkl
 *.pyc

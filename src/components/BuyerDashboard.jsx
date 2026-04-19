@@ -109,67 +109,64 @@ export default function BuyerDashboard({ result }) {
   return (
     <div className="animate-fade-up">
 
-      {/* 1. THE VERDICT */}
+      {/* 1. THE VERDICT — Compacted */}
       <div style={{
-        padding: '24px',
-        borderRadius: '16px',
-        marginBottom: '24px',
-        border: `1px solid ${verdictColor}40`,
+        padding: '16px 20px',
+        borderRadius: '12px',
+        marginBottom: '16px',
+        border: `1px solid ${verdictColor}30`,
         background: verdictBg,
-        display: 'flex', alignItems: 'flex-start', gap: '20px',
+        display: 'flex', alignItems: 'center', gap: '16px',
       }}>
-         <div style={{ fontSize: '42px', lineHeight: 1 }}>{verdictIcon}</div>
+         <div style={{ fontSize: '32px' }}>{verdictIcon}</div>
          <div>
-            <div style={{ fontFamily: 'var(--font-display)', fontSize: '22px', fontWeight: 800, color: verdictColor, marginBottom: '6px' }}>
+            <div style={{ fontFamily: 'var(--font-display)', fontSize: '18px', fontWeight: 800, color: verdictColor }}>
               {verdictTitle}
             </div>
-            <div style={{ fontSize: '15px', color: 'var(--text-secondary)' }}>
+            <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
               {verdictSub}
             </div>
          </div>
       </div>
 
-      {/* 2. THE THREE NUMBERS */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '24px' }}>
+      {/* 2. THE THREE NUMBERS — Tighter padding */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '16px' }}>
         
         {/* Left Box */}
-        <div style={{ padding: '24px', borderRadius: '16px', background: 'rgba(52, 211, 153, 0.08)', border: '1px solid rgba(52,211,153, 0.25)', textAlign: 'center' }}>
-          <div style={{ fontSize: '13px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '8px' }}>
+        <div style={{ padding: '16px', borderRadius: '12px', background: 'rgba(52, 211, 153, 0.05)', border: '1px solid rgba(52,211,153, 0.15)', textAlign: 'center' }}>
+          <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '4px' }}>
             {numLeftTitle}
           </div>
-          <div style={{ fontFamily: 'var(--font-display)', fontSize: '28px', fontWeight: 800, color: '#34d399', marginBottom: '6px' }}>
+          <div style={{ fontFamily: 'var(--font-display)', fontSize: '22px', fontWeight: 800, color: '#34d399' }}>
             {numLeftValue}
           </div>
-          <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
+          <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
             {numLeftSub}
           </div>
         </div>
 
         {/* Center Box (Fair Value) */}
-        <div style={{ padding: '24px', borderRadius: '16px', background: 'rgba(59, 130, 246, 0.08)', border: '1px solid rgba(59,130,246, 0.25)', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
-          <div style={{ fontSize: '13px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '8px' }}>
+        <div style={{ padding: '16px', borderRadius: '12px', background: 'rgba(59, 130, 246, 0.05)', border: '1px solid rgba(59,130,246, 0.15)', textAlign: 'center' }}>
+          <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '4px' }}>
             {numCenterTitle}
           </div>
-          <div style={{ fontFamily: 'var(--font-display)', fontSize: '28px', fontWeight: 800, color: '#60a5fa', marginBottom: '4px' }}>
+          <div style={{ fontFamily: 'var(--font-display)', fontSize: '22px', fontWeight: 800, color: '#60a5fa' }}>
             {numCenterValue}
           </div>
-          <div style={{ fontSize: '10px', fontWeight: 700, color: result.predictionSource?.includes('Real-time') ? '#34d399' : '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>
-             {result.predictionSource?.includes('Real-time') ? '● ' : '○ '}{result.predictionSource}
-          </div>
-          <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
+          <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
             {numCenterSub}
           </div>
         </div>
 
         {/* Right Box  */}
-        <div style={{ padding: '24px', borderRadius: '16px', background: 'rgba(251, 113, 133, 0.08)', border: '1px solid rgba(251,113,133, 0.25)', textAlign: 'center' }}>
-          <div style={{ fontSize: '13px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '8px' }}>
+        <div style={{ padding: '16px', borderRadius: '12px', background: 'rgba(251, 113, 133, 0.05)', border: '1px solid rgba(251,113,133, 0.15)', textAlign: 'center' }}>
+          <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '4px' }}>
             {numRightTitle}
           </div>
-          <div style={{ fontFamily: 'var(--font-display)', fontSize: '28px', fontWeight: 800, color: '#fb7185', marginBottom: '6px' }}>
+          <div style={{ fontFamily: 'var(--font-display)', fontSize: '22px', fontWeight: 800, color: '#fb7185' }}>
             {numRightValue}
           </div>
-          <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
+          <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
             {numRightSub}
           </div>
         </div>
