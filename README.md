@@ -1,58 +1,105 @@
 # PropIQ — Real Estate Decision Intelligence 🏠🧠
 
-PropIQ is an advanced **Real Estate Intelligence Engine** designed to bring machine learning precision to property valuation, negotiation, and Total Cost of Ownership (TCO) analytics. 
+PropIQ is a high-fidelity **Real Estate Intelligence Engine** designed to replace traditional brokerage guesswork with data-backed, machine learning-driven property valuation and Total Cost of Ownership (TCO) analytics. 
 
-Built initially as a high-performance React application, PropIQ replaces arbitrary broker estimates with data-backed, algorithmically sound valuations based on CPWD construction indices, state-level stamp duties, and granular property logic.
-
----
-
-## 🚀 Key Features
-
-### 1. Robust Predictive Form Engine
-A responsive, multi-step React property form tailored differently depending on the chosen property type (Apartment, Plot / Land, Penthouse, Builder Floor, Studio, or Villa). 
-- **Logical Validation Constraints**: Built-in guardrails ensure extreme edge-case boundaries are caught (e.g. maxing out inputs like broker-quotes at 1000 Crores, total floor bounds, or physical constraints like 3 balconies maximum for a 1-BHK).
-- **Global State Sanitization**: Component-level memory wipe explicitly prevents "data contamination". Switching from "Apartment" with *6000 sq ft* to "Row House" rigorously flushes state so validations fire realistically upon touch.
-
-### 2. Contextual UX & ML Highlights
-- Dynamic **Anchor Context Tracking**: The form consistently reminds you of your selection (e.g., `📍 Analysing: 2 BHK Apartment in Powai, Mumbai`) eliminating "form blindness" across steps.
-- **ML Signaling**: Highlights specific inputs with `🔑 KEY ML FACTOR` or `🔑 PRIMARY ML SIGNAL` so the user knows exactly what dictates the ML engine's output (like "Kitchen Type" in a Studio).
-
-### 3. Comprehensive Dashboard Architecture
-- **Buyer Dashboard**: Summarizes insights.
-- **Bank Dashboard**: Views collateral risks.
-- **Investor Dashboard**: Calculates cap rates and ROI.
-- **TCO Calculator**: Total Cost of Ownership splits breaking down raw construction costs, registry, and GST.
+Built with a state-of-the-art **VisionOS-inspired Glassmorphic UI**, PropIQ offers a premium, immersive experience for Indian home buyers, investors, and banks to analyze property values with surgical precision.
 
 ---
 
-## 🛠️ Architecture & Tech Stack
-Currently, PropIQ operates as a **Frontend-Simulation Model** with static mathematical heuristics running inside the user's browser. 
+## 🏛️ Architectural Structure
 
-*   **Frontend**: React, Vite, Vanilla CSS.
-*   *Upcoming Backend*: FastAPI (Python) & XGBoost data-science models.
+PropIQ follows a decoupled, intelligence-first architecture, separating the high-fidelity user interface from the heavy mathematical heuristics and geocoding engines.
 
----
-
-## ⚙️ Running Locally
-
-1. Clone the repository:
-```bash
-git clone https://github.com/TheRaviHub/propiq-real-estate.git
-```
-2. Navigate into the directory and install dependencies:
-```bash
-cd propiq-real-estate
-npm install
-```
-3. Boot the local Vite development server:
-```bash
-npm run dev
+```mermaid
+graph TD
+    A[User Interface] -->|Property Context| B[Intelligence Wizard]
+    B -->|Lat/Lng Discovery| C[Geographic Engine]
+    C -->|Reverse Geocoding| D[OSM / Nominatim API]
+    B -->|Validated Params| E[ML Pricing Engine]
+    E -->|Heuristic Models| F[Fair Value Output]
+    B -->|Construction Logic| G[TCO Analytics]
+    G -->|CPWD Indices| H[Total Cost Breakdown]
+    
+    subgraph "Frontend Layer (VisionOS Glass)"
+    A
+    B
+    end
+    
+    subgraph "Intelligence Layer"
+    E
+    G
+    end
+    
+    subgraph "External Services"
+    D
+    end
 ```
 
 ---
 
-## 🗺️ Roadmap (Phase 2)
-The next evolution of PropIQ involves stripping the client-side `mlEngine.js` heuristic math and connecting to an authentic ML API:
-1. **Data Scrubbing Engine**: Python/BeautifulSoup scripts scraping `MagicBricks`, `99acres`, etc.
-2. **Python FastAPI Backend**: A RESTful microservice replacing the frontend's algorithmic simulation.
-3. **Model Training**: A `scikit-learn` or `XGBoost` pipeline discovering dynamic pricing based purely on regional regression formulas.
+## 🛠️ Tech Stack & Technologies
+
+### **Frontend Architecture**
+- **Core Framework**: React 18+ with Vite for ultra-fast HMR and build performance.
+- **Styling Engine**: Vanilla CSS with **Apple Glassmorphism (VisionOS)** design principles—utilizing deep backdrop blurs, saturation boosters, and high-translucency overlays.
+- **State Management**: Localized component state with strict sanitization to prevent cross-property data contamination.
+- **Icons**: Lucide React for consistent, minimal iconography.
+
+### **Intelligence & Mapping**
+- **Geospatial**: Leaflet.js with custom **Arctic Cyan & Teal** tile filtering for a professional "Road Map" look.
+- **Geocoding**: Nominatim OpenStreetMap API for boundary-accurate Indian location detection.
+- **Math Engine**: Custom heuristic regression models (`mlEngine.js`) simulating XGBoost behaviors for instant client-side valuation.
+
+### **Backend (Phase 2 Integration)**
+- **API**: Python FastAPI microservices.
+- **Data Science**: XGBoost & Scikit-Learn models trained on scraped regional real estate datasets.
+
+---
+
+## 🚀 Key Working Principles
+
+### **1. VisionOS High-Fidelity Intake**
+The intake process is not a simple form; it's an **Intelligence Wizard**.
+- **Dynamic Logic**: The wizard morphs its requirements based on property type (e.g., Plot vs. Penthouse).
+- **Glassmorphic Feedback**: Real-time visual cues and premium blur effects guide the user through complex data entry.
+
+### **2. Geographic "National Focus" Engine**
+PropIQ implements a strict **India-Centric Mapping** philosophy.
+- **Boundary Masking**: Utilizing CSS backdrop-filter masks, the system blurs all regions outside the Indian border, focusing the intelligence strictly on the domestic market.
+- **Neural Outline**: A pulsing neon-cyan border defines the operational territory, ensuring geographic data integrity.
+
+### **3. Total Cost of Ownership (TCO) Analytics**
+Unlike basic price calculators, PropIQ provides a **True Cost Breakdown**:
+- Raw Land/Construction Value.
+- State-specific Stamp Duty & Registry.
+- GST and Hidden Society Maintenance overheads.
+
+---
+
+## ⚙️ Development Setup
+
+1. **Clone & Install**:
+   ```bash
+   git clone https://github.com/TheRaviHub/propiq-real-estate.git
+   cd propiq-real-estate
+   npm install
+   ```
+2. **Launch Intelligence Engine**:
+   ```bash
+   npm run dev
+   ```
+3. **Build for Production**:
+   ```bash
+   npm run build
+   ```
+
+---
+
+## 🗺️ Roadmap
+- [x] **Phase 1**: VisionOS UI & Frontend Heuristic Engine.
+- [ ] **Phase 2**: Python ML Backend & XGBoost Model Integration.
+- [ ] **Phase 3**: Real-time Marketplace Data Scraping (MagicBricks/99acres).
+- [ ] **Phase 4**: Bank Collateral Risk Scoring Dashboard.
+
+---
+*PropIQ — Built for the next generation of Indian Real Estate.*

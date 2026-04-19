@@ -91,10 +91,10 @@ function BuyerMonitoring({ result }) {
     <div className="animate-fade-up">
       {/* Deal Confidence Summary */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '12px', marginBottom: '28px' }}>
-        <StatBadge label="ML Fair Value Accuracy" value={`${confidenceScore}%`} color="#3b82f6" sub="Local transaction data" />
+        <StatBadge label="ML Fair Value Accuracy" value={`${confidenceScore}%`} color="#38bdf8" sub="Local transaction data" />
         <StatBadge label="Overpricing Detected" value={`+${gap}%`} color={gap > 10 ? '#fb7185' : '#34d399'} sub="vs ML fair value" />
         <StatBadge label="Avg Negotiation Success" value="74%" color="#34d399" sub="In this locality" />
-        <StatBadge label="Market Momentum" value={demandScore > 70 ? 'High' : 'Stable'} color={demandScore > 70 ? '#34d399' : '#60a5fa'} sub={`Score: ${demandScore}/100`} />
+        <StatBadge label="Market Momentum" value={demandScore > 70 ? 'High' : 'Stable'} color={demandScore > 70 ? '#10b981' : '#f97316'} sub={`Score: ${demandScore}/100`} />
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: '20px', marginBottom: '24px' }}>
@@ -111,8 +111,8 @@ function BuyerMonitoring({ result }) {
                   tickFormatter={v => `₹${(v/1e5).toFixed(1)}L`} />
                 <Tooltip contentStyle={{ background: 'rgba(10,22,40,0.95)', border: '1px solid rgba(59,130,246,0.3)', borderRadius: '10px' }}
                   labelStyle={{ color: '#f0f6ff' }} />
-                <Line type="monotone" name="ML Fair Value" dataKey="mlValue" stroke="#3b82f6" strokeWidth={2.5} dot={{ r: 3 }} />
-                <Line type="monotone" name="Market Rate" dataKey="marketRate" stroke="#fb7185" strokeWidth={2} strokeDasharray="5 3" dot={{ r: 3 }} />
+                <Line type="monotone" name="ML Fair Value" dataKey="mlValue" stroke="#38bdf8" strokeWidth={3} dot={{ r: 4, fill: '#38bdf8', strokeWidth: 0 }} />
+                <Line type="monotone" name="Market Rate" dataKey="marketRate" stroke="#fb7185" strokeWidth={2} strokeDasharray="6 4" dot={{ r: 3, fill: '#fb7185', strokeWidth: 0 }} />
               </LineChart>
             </ResponsiveContainer>
           </div>

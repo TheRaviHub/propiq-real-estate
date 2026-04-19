@@ -132,12 +132,12 @@ export default function BuyerDashboard({ result }) {
       {/* 2. THE THREE NUMBERS — Tighter padding */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '16px' }}>
         
-        {/* Left Box */}
-        <div style={{ padding: '16px', borderRadius: '12px', background: 'rgba(52, 211, 153, 0.05)', border: '1px solid rgba(52,211,153, 0.15)', textAlign: 'center' }}>
-          <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '4px' }}>
+        {/* Left Box (Bid Target) */}
+        <div className="glass" style={{ padding: '16px', borderRadius: '16px', background: 'rgba(16, 185, 129, 0.05)', border: '1px solid rgba(16, 185, 129, 0.2)', textAlign: 'center' }}>
+          <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>
             {numLeftTitle}
           </div>
-          <div style={{ fontFamily: 'var(--font-display)', fontSize: '22px', fontWeight: 800, color: '#34d399' }}>
+          <div style={{ fontFamily: 'var(--font-display)', fontSize: '24px', fontWeight: 800, color: '#34d399' }}>
             {numLeftValue}
           </div>
           <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
@@ -146,11 +146,11 @@ export default function BuyerDashboard({ result }) {
         </div>
 
         {/* Center Box (Fair Value) */}
-        <div style={{ padding: '16px', borderRadius: '12px', background: 'rgba(59, 130, 246, 0.05)', border: '1px solid rgba(59,130,246, 0.15)', textAlign: 'center' }}>
-          <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '4px' }}>
+        <div className="glass" style={{ padding: '16px', borderRadius: '16px', background: 'rgba(56, 189, 248, 0.05)', border: '1px solid rgba(56, 189, 248, 0.2)', textAlign: 'center' }}>
+          <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>
             {numCenterTitle}
           </div>
-          <div style={{ fontFamily: 'var(--font-display)', fontSize: '22px', fontWeight: 800, color: '#60a5fa' }}>
+          <div style={{ fontFamily: 'var(--font-display)', fontSize: '24px', fontWeight: 800, color: '#38bdf8' }}>
             {numCenterValue}
           </div>
           <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
@@ -158,12 +158,12 @@ export default function BuyerDashboard({ result }) {
           </div>
         </div>
 
-        {/* Right Box  */}
-        <div style={{ padding: '16px', borderRadius: '12px', background: 'rgba(251, 113, 133, 0.05)', border: '1px solid rgba(251,113,133, 0.15)', textAlign: 'center' }}>
-          <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '4px' }}>
+        {/* Right Box (Walk Away) */}
+        <div className="glass" style={{ padding: '16px', borderRadius: '16px', background: 'rgba(244, 63, 94, 0.05)', border: '1px solid rgba(244, 63, 94, 0.2)', textAlign: 'center' }}>
+          <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>
             {numRightTitle}
           </div>
-          <div style={{ fontFamily: 'var(--font-display)', fontSize: '22px', fontWeight: 800, color: '#fb7185' }}>
+          <div style={{ fontFamily: 'var(--font-display)', fontSize: '24px', fontWeight: 800, color: '#fb7185' }}>
             {numRightValue}
           </div>
           <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>

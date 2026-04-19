@@ -1,78 +1,176 @@
 // src/components/PropertyForm.jsx
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { MapPin, Navigation } from 'lucide-react';
+import SearchableSelect from './SearchableSelect';
+import MapModal from './MapModal';
 
 // ── Data ──────────────────────────────────────────────────────────────────────
 const STATE_CITIES = {
-  'Andhra Pradesh':  ['Visakhapatnam', 'Vijayawada', 'Guntur', 'Tirupati', 'Other'],
-  'Delhi (NCT)':     ['New Delhi', 'Noida', 'Gurgaon', 'Faridabad', 'Ghaziabad', 'Other'],
-  'Gujarat':         ['Ahmedabad', 'Surat', 'Vadodara', 'Rajkot', 'Other'],
-  'Karnataka':       ['Bangalore', 'Mysuru', 'Mangalore', 'Hubli-Dharwad', 'Other'],
-  'Kerala':          ['Kochi', 'Thiruvananthapuram', 'Kozhikode', 'Thrissur', 'Other'],
-  'Madhya Pradesh':  ['Bhopal', 'Indore', 'Gwalior', 'Jabalpur', 'Other'],
-  'Maharashtra':     ['Mumbai', 'Pune', 'Nagpur', 'Nashik', 'Aurangabad', 'Other'],
-  'Punjab':          ['Chandigarh', 'Ludhiana', 'Amritsar', 'Jalandhar', 'Other'],
-  'Rajasthan':       ['Jaipur', 'Jodhpur', 'Udaipur', 'Kota', 'Other'],
-  'Tamil Nadu':      ['Chennai', 'Coimbatore', 'Madurai', 'Salem', 'Other'],
-  'Telangana':       ['Hyderabad', 'Warangal', 'Nizamabad', 'Other'],
-  'Uttar Pradesh':   ['Lucknow', 'Kanpur', 'Agra', 'Varanasi', 'Noida', 'Other'],
-  'West Bengal':     ['Kolkata', 'Howrah', 'Durgapur', 'Siliguri', 'Other'],
-  'Other':           ['Other'],
+  'Andhra Pradesh':       ['Visakhapatnam','Vijayawada','Guntur','Tirupati','Kurnool','Nellore','Rajahmundry','Kadapa','Kakinada','Eluru','Anantapur','Ongole','Chittoor','Other'],
+  'Arunachal Pradesh':    ['Itanagar','Naharlagun','Pasighat','Tawang','Other'],
+  'Assam':                ['Guwahati','Dibrugarh','Silchar','Jorhat','Tinsukia','Nagaon','Other'],
+  'Bihar':                ['Patna','Gaya','Muzaffarpur','Bhagalpur','Darbhanga','Purnia','Arrah','Begusarai','Other'],
+  'Chhattisgarh':         ['Raipur','Bhilai','Bilaspur','Durg','Korba','Rajnandgaon','Other'],
+  'Goa':                  ['Panaji','Margao','Vasco da Gama','Mapusa','Ponda','Other'],
+  'Gujarat':              ['Ahmedabad','Surat','Vadodara','Rajkot','Bhavnagar','Jamnagar','Gandhinagar','Anand','Mehsana','Morbi','Navsari','Other'],
+  'Haryana':              ['Gurugram','Faridabad','Panipat','Ambala','Yamunanagar','Rohtak','Hisar','Sonipat','Karnal','Other'],
+  'Himachal Pradesh':     ['Shimla','Manali','Dharamsala','Solan','Kullu','Mandi','Other'],
+  'Jharkhand':            ['Ranchi','Jamshedpur','Dhanbad','Bokaro','Hazaribagh','Other'],
+  'Karnataka':            ['Bangalore','Mysuru','Mangalore','Hubli-Dharwad','Belagavi','Kalaburagi','Tumkur','Davanagere','Shivamogga','Udupi','Other'],
+  'Kerala':               ['Kochi','Thiruvananthapuram','Kozhikode','Thrissur','Kannur','Kollam','Palakkad','Malappuram','Other'],
+  'Madhya Pradesh':       ['Bhopal','Indore','Gwalior','Jabalpur','Ujjain','Sagar','Dewas','Satna','Ratlam','Other'],
+  'Maharashtra':          ['Mumbai','Pune','Nagpur','Nashik','Thane','Aurangabad','Solapur','Kolhapur','Navi Mumbai','Amravati','Latur','Akola','Other'],
+  'Manipur':              ['Imphal','Thoubal','Bishnupur','Other'],
+  'Meghalaya':            ['Shillong','Tura','Jowai','Other'],
+  'Mizoram':              ['Aizawl','Lunglei','Other'],
+  'Nagaland':             ['Kohima','Dimapur','Mokokchung','Other'],
+  'Odisha':               ['Bhubaneswar','Cuttack','Rourkela','Berhampur','Puri','Brahmapur','Sambalpur','Other'],
+  'Punjab':               ['Ludhiana','Amritsar','Jalandhar','Patiala','Bathinda','Mohali','Pathankot','Other'],
+  'Rajasthan':            ['Jaipur','Jodhpur','Udaipur','Kota','Bikaner','Ajmer','Alwar','Sikar','Bhilwara','Other'],
+  'Sikkim':               ['Gangtok','Namchi','Other'],
+  'Tamil Nadu':           ['Chennai','Coimbatore','Madurai','Salem','Tiruchirappalli','Tirunelveli','Erode','Vellore','Thanjavur','Tiruppur','Other'],
+  'Telangana':            ['Hyderabad','Warangal','Nizamabad','Karimnagar','Khammam','Ramagundam','Other'],
+  'Tripura':              ['Agartala','Dharmanagar','Other'],
+  'Uttar Pradesh':        ['Lucknow','Kanpur','Agra','Varanasi','Prayagraj','Noida','Ghaziabad','Meerut','Mathura','Bareilly','Aligarh','Gorakhpur','Moradabad','Other'],
+  'Uttarakhand':          ['Dehradun','Haridwar','Nainital','Roorkee','Haldwani','Mussoorie','Rishikesh','Other'],
+  'West Bengal':          ['Kolkata','Howrah','Durgapur','Siliguri','Asansol','Bardhaman','Kharagpur','Haldia','Other'],
+  // Union Territories
+  'Delhi (NCT)':          ['New Delhi','Central Delhi','North Delhi','South Delhi','East Delhi','West Delhi','Dwarka','Rohini','Other'],
+  'Chandigarh (UT)':      ['Chandigarh','Mohali','Panchkula','Other'],
+  'Jammu & Kashmir':      ['Srinagar','Jammu','Anantnag','Sopore','Other'],
+  'Ladakh':               ['Leh','Kargil','Other'],
+  'Puducherry':           ['Puducherry','Karaikal','Mahe','Other'],
+  'Andaman & Nicobar':    ['Port Blair','Other'],
+  'Dadra & NH / D&D':     ['Daman','Silvassa','Other'],
+  'Lakshadweep':          ['Kavaratti','Other'],
+  'Other':                ['Other'],
 };
 
 const CITY_LOCALITIES = {
-  Mumbai: ['Bandra West','Andheri West','Powai','Juhu','Malad West','Borivali','Thane','Navi Mumbai','Worli','Lower Parel','Chembur','Other'],
-  Pune: ['Koregaon Park','Baner','Hinjewadi','Viman Nagar','Kharadi','Wakad','Hadapsar','Kalyani Nagar','Aundh','Other'],
-  Nagpur: ['Dharampeth','Sadar','Civil Lines','Nagpur Airport Zone','Sitabuldi','Other'],
-  Nashik: ['Gangapur Road','College Road','Nashik Road','Dwarka','Other'],
-  Aurangabad: ['Cidco','Garkheda','Cantonment','Other'],
-  'New Delhi': ['Connaught Place','Hauz Khas','Vasant Kunj','Dwarka','Rohini','Pitampura','South Extension','Lajpat Nagar','Defence Colony','Other'],
-  Noida: ['Sector 62','Sector 137','Sector 150','Sector 18','Greater Noida','Sector 50','Other'],
-  Gurgaon: ['DLF Phase 1','Sohna Road','Golf Course Road','Sector 56','MG Road','Sector 82','Other'],
-  Faridabad: ['Sector 15','NIT','Sector 21C','Ballabhgarh','Other'],
-  Ghaziabad: ['Indirapuram','Vaishali','Raj Nagar Extension','NH-24 Corridor','Other'],
-  Bangalore: ['Koramangala','Indiranagar','Whitefield','Electronic City','HSR Layout','Marathahalli','Jayanagar','Bannerghatta Road','Sarjapur Road','Yelahanka','Other'],
-  Mysuru: ['Gokulam','Vijayanagar','Saraswathipuram','Kuvempunagar','Other'],
-  Mangalore: ['Hampankatta','Kadri','Bejai','Kankanady','Other'],
-  'Hubli-Dharwad': ['Vidyanagar','Gokul','Deshpande Nagar','Other'],
-  Hyderabad: ['Banjara Hills','Jubilee Hills','Gachibowli','Kondapur','Madhapur','HITEC City','Kukatpally','Miyapur','Begumpet','Other'],
-  Warangal: ['Hanamkonda','Kazipet','Warangal Urban','Other'],
-  Nizamabad: ['Nizamabad Urban','Other'],
-  Visakhapatnam: ['MVP Colony','Gajuwaka','Rushikonda','Seethammadhara','Other'],
-  Vijayawada: ['Benz Circle','Kanuru','MG Road','Other'],
-  Guntur: ['Arundelpet','Brodipet','Other'],
-  Tirupati: ['Balaji Nagar','Karakambadi Road','Other'],
-  Chennai: ['Anna Nagar','T. Nagar','Adyar','Velachery','Perambur','OMR','Porur','Tambaram','Sholinganallur','Other'],
-  Coimbatore: ['RS Puram','Gandhipuram','Saibaba Colony','Singanallur','Other'],
-  Madurai: ['Anna Nagar','KK Nagar','Thirunagar','Other'],
-  Salem: ['Fairlands','Swarnapuri','Other'],
-  Ahmedabad: ['Prahlad Nagar','Satellite','Bodakdev','Vastrapur','Navrangpura','Science City','Maninagar','Other'],
-  Surat: ['Adajan','Vesu','Piplod','Athwa','Other'],
-  Vadodara: ['Alkapuri','Fatehgunj','Karelibaug','Other'],
-  Rajkot: ['Kalawad Road','University Road','Other'],
-  Kolkata: ['Salt Lake','New Town','Park Street','Alipore','Ballygunge','Dum Dum','Garia','Other'],
-  Howrah: ['Shibpur','Bamangachi','Other'],
-  Durgapur: ['Benachity','Bidhannagar','Other'],
-  Siliguri: ['Sevoke Road','Pradhan Nagar','Other'],
-  Jaipur: ['Vaishali Nagar','Malviya Nagar','C-Scheme','Jagatpura','Mansarovar','Other'],
-  Jodhpur: ['Ratanada','Shastri Nagar','Other'],
-  Udaipur: ['Fatehpura','Hiran Magri','Other'],
-  Kota: ['Talwandi','Vigyan Nagar','Other'],
-  Lucknow: ['Gomti Nagar','Hazratganj','Aliganj','Indira Nagar','Vibhuti Khand','Other'],
-  Kanpur: ['Civil Lines','Swaroop Nagar','Kidwai Nagar','Other'],
-  Agra: ['Kamla Nagar','Dayal Bagh','Other'],
-  Varanasi: ['Sigra','Lanka','BHU Area','Other'],
-  Bhopal: ['MP Nagar','Arera Colony','Bhopal Cantonment','Other'],
-  Indore: ['Vijay Nagar','AB Road','Scheme 54','Palasia','Other'],
-  Gwalior: ['Morar','Lashkar','City Centre','Other'],
-  Jabalpur: ['Napier Town','Civil Lines','Other'],
-  Chandigarh: ['Sector 17','Sector 35','Sector 22','Mohali','Panchkula','Other'],
-  Ludhiana: ['Model Town','BRS Nagar','Other'],
-  Amritsar: ['Ranjit Avenue','Lawrence Road','Other'],
-  Jalandhar: ['Model Town','Patel Nagar','Other'],
-  Kochi: ['Kakkanad','Edappally','Maradu','Thrippunithura','Aluva','Other'],
-  Thiruvananthapuram: ['Kowdiar','Pattom','Vanchiyoor','Other'],
-  Kozhikode: ['Calicut Beach','Nadakkavu','Other'],
-  Thrissur: ['Thrissur Town','Punkunnam','Other'],
+  // ── Maharashtra ──────────────────────────────────────────────────────────
+  Mumbai: ['Bandra West','Bandra East','Andheri West','Andheri East','Powai','Juhu','Malad West','Malad East','Borivali West','Borivali East','Kandivali','Goregaon','Lokhandwala','Worli','Lower Parel','Prabhadevi','Dadar','Matunga','Chembur','Ghatkopar','Vikhroli','Mulund','Kurla','Bhandup','Thane West','Thane East','Navi Mumbai','Kharghar','Vashi','Panvel','Nerul','Belapur','Ulwe','Other'],
+  Pune: ['Koregaon Park','Baner','Hinjewadi','Viman Nagar','Kharadi','Wakad','Hadapsar','Kalyani Nagar','Aundh','Kothrud','Bavdhan','Balewadi','Sus Road','Undri','Kondhwa','Mundhwa','Magarpatta','Wagholi','Ambegaon','Narhe','Pisoli','NIBM Road','Wanowrie','Other'],
+  Nagpur: ['Dharampeth','Sadar','Civil Lines','Sitabuldi','Ramdaspeth','Pratap Nagar','Trimurti Nagar','Manewada','Hingna Road','Wardha Road','Other'],
+  Nashik: ['Gangapur Road','College Road','Nashik Road','Dwarka','Satpur','Ambad','Indira Nagar','Other'],
+  Thane: ['Ghodbunder Road','Manpada','Balkum','Majiwada','Wagle Estate','Hiranandani Estate','Kavesar','Other'],
+  'Navi Mumbai': ['Kharghar','Vashi','Nerul','Belapur','Ulwe','Panvel','Taloja','Airoli','Ghansoli','Kopar Khairane','Other'],
+  Aurangabad: ['Cidco','Garkheda','Cantonment','Beed Bypass','Other'],
+  Solapur: ['Hotgi Road','Akkalkot Road','Other'],
+  Kolhapur: ['Tarabai Park','Shivaji Park','Other'],
+  // ── Delhi NCT ────────────────────────────────────────────────────────────
+  'New Delhi': ['Connaught Place','Hauz Khas','Vasant Kunj','Dwarka','Rohini','Pitampura','South Extension','Lajpat Nagar','Defence Colony','Mayur Vihar','Saket','Green Park','Greater Kailash','Janakpuri','Paschim Vihar','Rajouri Garden','Other'],
+  'South Delhi': ['Saket','Vasant Kunj','Malviya Nagar','Hauz Khas','Greater Kailash I','Greater Kailash II','Kalkaji','Chirag Delhi','Other'],
+  'North Delhi': ['Model Town','Pitampura','Rohini Sector 1–4','Shalimar Bagh','Ashok Vihar','Civil Lines','Other'],
+  Dwarka: ['Dwarka Sector 6','Dwarka Sector 7','Dwarka Sector 10','Dwarka Sector 12','Dwarka Sector 21','Dwarka Mor','Other'],
+  Rohini: ['Rohini Sector 1','Rohini Sector 9','Rohini Sector 11','Rohini Sector 24','Prashant Vihar','Other'],
+  Noida: ['Sector 18','Sector 22','Sector 44','Sector 50','Sector 62','Sector 76','Sector 78','Sector 100','Sector 137','Sector 150','Greater Noida West','Greater Noida Knowledge Park','Other'],
+  Ghaziabad: ['Indirapuram','Vaishali','Raj Nagar Extension','NH-24 Corridor','Crossing Republik','Kaushambi','Vasundhara','Other'],
+  // ── Haryana ──────────────────────────────────────────────────────────────
+  Gurugram: ['DLF Phase 1','DLF Phase 2','DLF Phase 4','DLF Phase 5','Sohna Road','Golf Course Road','Golf Course Extension','Sector 56','Sector 57','Sector 82','MG Road','Dwarka Expressway','Palam Vihar','South City','Vatika City','Other'],
+  Faridabad: ['Sector 15','NIT','Sector 21C','Ballabhgarh','Sector 29','Greater Faridabad','BPTP Park','Other'],
+  Panipat: ['Model Town','Sector 11','GT Road Area','Other'],
+  // ── Karnataka ────────────────────────────────────────────────────────────
+  Bangalore: ['Koramangala','Indiranagar','Whitefield','Electronic City','HSR Layout','Marathahalli','Jayanagar','Bannerghatta Road','Sarjapur Road','Yelahanka','Hebbal','JP Nagar','BTM Layout','Rajajinagar','Malleshwaram','Bellandur','Varthur','KR Puram','Banaswadi','Kaggadasapura','Domlur','RT Nagar','Devanahalli','Other'],
+  Mysuru: ['Gokulam','Vijayanagar','Saraswathipuram','Kuvempunagar','Hebbal','Chamundipuram','Other'],
+  Mangalore: ['Hampankatta','Kadri','Bejai','Kankanady','Falnir','Balmatta','Other'],
+  'Hubli-Dharwad': ['Vidyanagar','Gokul','Deshpande Nagar','Keshwapur','Other'],
+  Belagavi: ['Camp','Tilakwadi','Shahpur','Other'],
+  // ── Telangana ────────────────────────────────────────────────────────────
+  Hyderabad: ['Banjara Hills','Jubilee Hills','Gachibowli','Kondapur','Madhapur','HITEC City','Kukatpally','Miyapur','Begumpet','Ameerpet','SR Nagar','Kokapet','Nallagandla','Manikonda','Tolichowki','Uppal','L B Nagar','Attapur','Other'],
+  Warangal: ['Hanamkonda','Kazipet','Warangal Urban','Balasamudram','Other'],
+  Nizamabad: ['Nizamabad Urban','Armoor','Other'],
+  Karimnagar: ['Karimnagar Urban','Other'],
+  // ── Andhra Pradesh ────────────────────────────────────────────────────────
+  Visakhapatnam: ['MVP Colony','Gajuwaka','Rushikonda','Seethammadhara','Madhurawada','Dwaraka Nagar','Murali Nagar','Other'],
+  Vijayawada: ['Benz Circle','Kanuru','MG Road','Governorpet','Moghalrajpuram','Suryaraopet','Other'],
+  Guntur: ['Arundelpet','Brodipet','Old Town','Other'],
+  Tirupati: ['Balaji Nagar','Karakambadi Road','RC Road','Other'],
+  Kurnool: ['Old Town','New Town','Other'],
+  Nellore: ['Magunta Layout','Grand Trunk Road','Other'],
+  // ── Tamil Nadu ───────────────────────────────────────────────────────────
+  Chennai: ['Anna Nagar','T. Nagar','Adyar','Velachery','Perambur','OMR','Porur','Tambaram','Sholinganallur','Pallavaram','Ambattur','Mogappair','Chromepet','Guduvanchery','Pallikaranai','Mylapore','Nungambakkam','Kilpauk','Other'],
+  Coimbatore: ['RS Puram','Gandhipuram','Saibaba Colony','Singanallur','Peelamedu','Tidel Park','Saravanampatti','Other'],
+  Madurai: ['Anna Nagar','KK Nagar','Thirunagar','Alagar Kovil Road','Iyer Bungalow','Other'],
+  Salem: ['Fairlands','Swarnapuri','Alagapuram','Other'],
+  Tiruchirappalli: ['Thillai Nagar','Srirangam','KK Nagar Trichy','Other'],
+  Tirunelveli: ['Palayamkottai','Melapalayam','Other'],
+  Vellore: ['Sathuvachari','Gandhinagar Vellore','Other'],
+  // ── Kerala ───────────────────────────────────────────────────────────────
+  Kochi: ['Kakkanad','Edappally','Maradu','Thrippunithura','Aluva','Kaloor','Panampilly Nagar','Elamakkara','Kadavanthra','Vyttila','Other'],
+  Thiruvananthapuram: ['Kowdiar','Pattom','Vanchiyoor','Kazhakuttam','Sreekaryam','Technopark','Kesavadasapuram','Other'],
+  Kozhikode: ['Calicut Beach','Nadakkavu','Palayam','Medical College Road','Mavoor Road','Other'],
+  Thrissur: ['Thrissur Town','Punkunnam','Ollur','Ayyanthole','Other'],
+  Kannur: ['Kannur Town','Thalassery','Other'],
+  // ── Gujarat ──────────────────────────────────────────────────────────────
+  Ahmedabad: ['Prahlad Nagar','Satellite','Bodakdev','Vastrapur','Navrangpura','Science City','Maninagar','Bopal','South Bopal','Shela','Thaltej','Motera','Chandkheda','Gota','Naranpura','Paldi','Other'],
+  Surat: ['Adajan','Vesu','Piplod','Athwa','Pal','Althan','City Light','Katargam','Other'],
+  Vadodara: ['Alkapuri','Fatehgunj','Karelibaug','Akota','Sayajigunj','Productivity Road','Other'],
+  Rajkot: ['Kalawad Road','University Road','150 Feet Ring Road','Mavdi','Amin Marg','Other'],
+  Gandhinagar: ['Sector 1','Sector 6','Sector 16','Infocity','Other'],
+  Bhavnagar: ['Waghawadi Road','Crescent Circle Area','Other'],
+  // ── Rajasthan ────────────────────────────────────────────────────────────
+  Jaipur: ['Vaishali Nagar','Malviya Nagar','C-Scheme','Jagatpura','Mansarovar','Tonk Road','Ajmer Road','Chitrakoot','Sirsi Road','Bani Park','Johari Bazaar Area','Other'],
+  Jodhpur: ['Ratanada','Shastri Nagar','Pal Road','Chopasni Housing Board','Other'],
+  Udaipur: ['Fatehpura','Hiran Magri','Shobhagpura','Bhuwana','Other'],
+  Kota: ['Talwandi','Vigyan Nagar','Rangbari','Other'],
+  Bikaner: ['Rani Bazar','Sadul Colony','Other'],
+  Ajmer: ['Vaishali Nagar Ajmer','Makrana Road','Other'],
+  // ── Madhya Pradesh ───────────────────────────────────────────────────────
+  Bhopal: ['MP Nagar','Arera Colony','Bhopal Cantonment','Kolar Road','Ayodhya Bypass','Hoshangabad Road','Other'],
+  Indore: ['Vijay Nagar','AB Road','Scheme 54','Palasia','MR-10 Corridor','Bhawarkuan','Super Corridor','Other'],
+  Gwalior: ['Morar','Lashkar','City Centre','Gwalior Thatipur','Other'],
+  Jabalpur: ['Napier Town','Civil Lines','Adhartal','Other'],
+  Ujjain: ['Freeganj','Nanakheda','Other'],
+  // ── Uttar Pradesh ────────────────────────────────────────────────────────
+  Lucknow: ['Gomti Nagar','Gomti Nagar Extension','Hazratganj','Aliganj','Indira Nagar','Vibhuti Khand','Mahanagar','Sushant Golf City','Sultanpur Road','Faizabad Road','Raebareli Road','Other'],
+  Kanpur: ['Civil Lines','Swaroop Nagar','Kidwai Nagar','Kakadeo','Armapur','Other'],
+  Agra: ['Kamla Nagar','Dayal Bagh','Fatehabad Road','Sikandra','Other'],
+  Varanasi: ['Sigra','Lanka','BHU Area','Bhelupur','Nadesar','Other'],
+  Prayagraj: ['Civil Lines','George Town','Naini','Jhusi','Other'],
+  Meerut: ['Shastri Nagar Meerut','Kanker Khera','Lisari Gate','Other'],
+  Mathura: ['Vrindavan Road','Krishna Nagar Mathura','Other'],
+  // ── West Bengal ──────────────────────────────────────────────────────────
+  Kolkata: ['Salt Lake Sector I–V','New Town','Park Street','Alipore','Ballygunge','Dum Dum','Garia','Tollygunge','Behala','Lake Town','Kasba','Kankurgachi','Phool Bagan','Ultadanga','Rajarhat','Other'],
+  Howrah: ['Shibpur','Bamangachi','Santragachi','Other'],
+  Durgapur: ['Benachity','Bidhannagar','City Centre Durgapur','Other'],
+  Siliguri: ['Sevoke Road','Pradhan Nagar','Hakimpara','Other'],
+  Asansol: ['Burnpur','Senraleigh','Other'],
+  // ── Punjab ───────────────────────────────────────────────────────────────
+  Ludhiana: ['Model Town','BRS Nagar','Dugri','Pakhowal Road','Other'],
+  Amritsar: ['Ranjit Avenue','Lawrence Road','Alpha International City','MBM Offshore Road','Other'],
+  Jalandhar: ['Model Town','Patel Nagar','Lajpat Nagar','Guru Nanak Dev Nagar','Other'],
+  Mohali: ['Phase 5','Phase 7','Phase 10','Phase 11','Aerocity Mohali','Other'],
+  Chandigarh: ['Sector 17','Sector 22','Sector 35','Sector 43','Sector 46','Manimajra','Other'],
+  Panchkula: ['Sector 7','Sector 9','Sector 20','Kalka Road','Other'],
+  // ── Bihar & Jharkhand ────────────────────────────────────────────────────
+  Patna: ['Boring Road','Bailey Road','Rajendra Nagar','Kankarbagh','Patliputra Colony','Gandhi Maidan Area','Other'],
+  Gaya: ['Bodh Gaya','Station Road Gaya','Other'],
+  Ranchi: ['Harmu','Kanke Road','Lalpur','HEC Colony','Bariatu','Other'],
+  Jamshedpur: ['Bistupur','Sakchi','Telco Colony','Adityapur','Other'],
+  Dhanbad: ['Saraidhela','Bank More','Other'],
+  // ── Odisha ───────────────────────────────────────────────────────────────
+  Bhubaneswar: ['Patia','Nayapalli','Saheed Nagar','Jaydev Vihar','Chandrasekharpur','Dumduma','IRC Village','Other'],
+  Cuttack: ['Cuttack City','Bidanasi','Other'],
+  Rourkela: ['Rourkela Steel City','Chhend','Other'],
+  // ── Assam ────────────────────────────────────────────────────────────────
+  Guwahati: ['Guwahati City','Paltan Bazar','Dispur','Beltola','VIP Road Guwahati','Zoo Road Area','Other'],
+  // ── Uttarakhand ──────────────────────────────────────────────────────────
+  Dehradun: ['Rajpur Road','Sahastradhara Road','Clement Town','Dharampur','Patel Nagar Dehradun','Other'],
+  Haridwar: ['SIDCUL Haridwar','Jwalapur','Ranipur More','Other'],
+  Nainital: ['Mallital','Tallital','Other'],
+  // ── Himachal Pradesh ─────────────────────────────────────────────────────
+  Shimla: ['The Mall','Chhota Shimla','Kufri','Sanjauli','Other'],
+  Dharamsala: ['McLeod Ganj','Dharamsala Town','Khanyara','Other'],
+  // ── Goa ──────────────────────────────────────────────────────────────────
+  Panaji: ['Miramar','Dona Paula','Porvorim','Other'],
+  Margao: ['Fatorda','Gogol','Other'],
+  // ── Chhattisgarh ─────────────────────────────────────────────────────────
+  Raipur: ['Shankar Nagar','Avanti Vihar','Tatibandh','Devendra Nagar','Other'],
+  Bhilai: ['Supela','Durg City','Bhilai Steel City','Other'],
+  // ── Jammu & Kashmir ──────────────────────────────────────────────────────
+  Srinagar: ['Jawahar Nagar','Raj Bagh','Gogji Bagh','Parimpora','Bemina','Other'],
+  Jammu: ['Bakshi Nagar','Gandhi Nagar','Trikuta Nagar','Shastri Nagar Jammu','Other'],
+  // ── Fallback ─────────────────────────────────────────────────────────────
   Other: ['Other'],
 };
 
@@ -150,46 +248,16 @@ const DEFAULT_FORM = {
 function FieldError({ msg }) {
   if (!msg) return null;
 
-  const handleNextStep = () => {
-    setTouched(Object.keys(form).reduce((o, k) => ({ ...o, [k]: true }), {}));
-    const errs = validate(form);
-    setErrors(errs);
-    
-    if (currentStep === 1) {
-      if (!errs.state && !errs.city && !errs.locality && !errs.localityDemand) {
-        setCurrentStep(2);
-        setTouched({});
-      }
-    } else if (currentStep === 2) {
-      if (!errs.propertyType) {
-        setCurrentStep(3);
-        setTouched({});
-      }
-    } else if (currentStep === 3) {
-      // For land, specs validation is different
-      if (isLand_f) {
-        if (!errs.plotArea && !errs.zoneClassification && !errs.legalStatus) {
-           setCurrentStep(4);
-           setTouched({});
-        }
-      } else {
-        if (!errs.bhk && !errs.bathrooms && !errs.area && !errs.age && !errs.floor && !errs.totalFloors && !errs.plotArea && !errs.villaFloors && !errs.terraceArea && !errs.kitchenType) {
-          setCurrentStep(4);
-          setTouched({});
-        }
-      }
-    }
-  };
 
-  const handlePrevStep = () => setCurrentStep(prev => prev - 1);
 
   return (
 
     <div style={{
       display: 'flex', alignItems: 'center', gap: '6px',
-      marginTop: '6px', fontSize: '12px', color: '#fb7185',
-      background: 'rgba(244,63,94,0.08)', border: '1px solid rgba(244,63,94,0.25)',
-      padding: '5px 10px', borderRadius: '6px',
+      marginTop: '6px', fontSize: '11px', fontWeight: 500, color: '#ff7e93',
+      background: 'rgba(244,63,94,0.12)', border: '1px solid rgba(244,63,94,0.2)',
+      padding: '6px 12px', borderRadius: '8px',
+      backdropFilter: 'blur(10px)',
     }}>
       ⚠ {msg}
     </div>
@@ -200,12 +268,15 @@ function StepBadge({ n, label, done }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
       <div style={{
-        width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
+        width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: '13px', fontWeight: 700,
-        background: done ? 'var(--clr-accent-emerald)' : 'rgba(59,130,246,0.15)',
-        color: done ? '#fff' : 'var(--clr-primary-light)',
-        border: done ? 'none' : '1px solid rgba(59,130,246,0.3)',
+        fontSize: '13px', fontWeight: 800,
+        background: done 
+          ? 'linear-gradient(135deg, #10b981, #059669)' 
+          : 'linear-gradient(135deg, rgba(79, 70, 229, 0.4), rgba(59, 130, 246, 0.2))',
+        color: '#fff',
+        border: done ? 'none' : '1px solid rgba(255, 255, 255, 0.15)',
+        boxShadow: done ? '0 4px 12px rgba(16, 185, 129, 0.3)' : '0 4px 12px rgba(0, 0, 0, 0.2)',
       }}>
         {done ? '✓' : n}
       </div>
@@ -222,10 +293,11 @@ function PropertyCardPreview({ form }) {
   if (!ready) return null;
   const facingEmoji = { North: '⬆', 'North-East': '↗', East: '➡', 'South-East': '↘', South: '⬇', 'South-West': '↙', West: '⬅', 'North-West': '↖' };
   return (
-    <div style={{
-      marginTop: '20px', padding: '18px 20px', borderRadius: '14px',
-      border: '1px solid rgba(59,130,246,0.35)',
-      background: 'linear-gradient(135deg, rgba(59,130,246,0.08), rgba(139,92,246,0.05))',
+    <div className="glass" style={{
+      marginTop: '24px', padding: '20px', borderRadius: '16px',
+      border: '1px solid rgba(255, 255, 255, 0.15)',
+      background: 'linear-gradient(135deg, rgba(79, 70, 229, 0.12), rgba(124, 58, 237, 0.08))',
+      boxShadow: '0 10px 30px rgba(0, 0, 0, 0.2)',
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
         <span style={{ fontSize: '11px', fontWeight: 700, color: '#60a5fa', textTransform: 'uppercase', letterSpacing: '1px' }}>
@@ -285,8 +357,8 @@ function TypeSpecFields({ form, errors, setField }) {
     <div className="form-field">
       <label className="form-label" htmlFor="carpetArea">
         Carpet Area (sq ft)
-        <span style={{ color: 'var(--text-muted)', fontWeight: 400, marginLeft: '6px', fontSize: '11px', whiteSpace: 'nowrap' }}>
-          {area > 0 ? `(max: ${area.toLocaleString()})` : '(optional)'}
+        <span>
+          {area > 0 ? `(max ${area.toLocaleString()})` : '(optional)'}
         </span>
       </label>
       <input id="carpetArea" type="number" onKeyDown={(e) => ['e', 'E', '+', '-'].includes(e.key) && e.preventDefault()}
@@ -308,7 +380,7 @@ function TypeSpecFields({ form, errors, setField }) {
       <div className="form-field">
         <label className="form-label" htmlFor="plotAreaLand">
           Plot / Land Area (sq ft) *
-          <span style={{ color:'#f59e0b', fontWeight:600, marginLeft:'6px', fontSize:'11px' }}>🔑 Primary ML signal</span>
+          <span className="ml-badge">🔑 Primary ML signal</span>
         </label>
         <input id="plotAreaLand" type="number" onKeyDown={(e) => ['e', 'E', '+', '-'].includes(e.key) && e.preventDefault()} min={100}
           className={`form-input ${errors.plotArea ? 'input-error' : ''}`}
@@ -318,43 +390,49 @@ function TypeSpecFields({ form, errors, setField }) {
       </div>
       <div className="form-field">
         <label className="form-label" htmlFor="zoneClassification">Zone Classification *</label>
-        <select id="zoneClassification"
-          className={`form-select ${errors.zoneClassification ? 'input-error' : ''}`}
-          value={form.zoneClassification} onChange={e => setField('zoneClassification', e.target.value)}>
-          <option value="">— Select Zone —</option>
-          {ZONE_TYPES.map(z => <option key={z} value={z}>{z}</option>)}
-        </select>
+        <SearchableSelect
+          id="zoneClassification"
+          options={ZONE_TYPES}
+          value={form.zoneClassification}
+          onChange={e => setField('zoneClassification', e.target.value)}
+          placeholder="Select zone..."
+          error={errors.zoneClassification}
+        />
         <FieldError msg={errors.zoneClassification} />
       </div>
       {/* Row 2: Legal Status | Road Type */}
       <div className="form-field">
         <label className="form-label" htmlFor="legalStatus">
           Legal Status *
-          <span style={{ color:'#f59e0b', fontWeight:600, marginLeft:'6px', fontSize:'11px' }}>🔑 Key ML factor</span>
+          <span className="ml-badge">🔑 Key ML factor</span>
         </label>
-        <select id="legalStatus"
-          className={`form-select ${errors.legalStatus ? 'input-error' : ''}`}
-          value={form.legalStatus} onChange={e => setField('legalStatus', e.target.value)}>
-          <option value="">— Select Status —</option>
-          {LEGAL_STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
-        </select>
+        <SearchableSelect
+          id="legalStatus"
+          options={LEGAL_STATUSES}
+          value={form.legalStatus}
+          onChange={e => setField('legalStatus', e.target.value)}
+          placeholder="Select status..."
+          error={errors.legalStatus}
+        />
         <FieldError msg={errors.legalStatus} />
       </div>
       <div className="form-field">
         <label className="form-label" htmlFor="roadType">Road / Access Type
           <span style={{ color:'var(--text-muted)', fontWeight:400, marginLeft:'6px', fontSize:'11px' }}>(affects price ±12%)</span>
         </label>
-        <select id="roadType" className="form-select"
-          value={form.roadType} onChange={e => setField('roadType', e.target.value)}>
-          <option value="">— Select Road Type —</option>
-          {ROAD_TYPES.map(r => <option key={r} value={r}>{r}</option>)}
-        </select>
+        <SearchableSelect
+          id="roadType"
+          options={ROAD_TYPES}
+          value={form.roadType}
+          onChange={e => setField('roadType', e.target.value)}
+          placeholder="Select road..."
+        />
       </div>
       {/* Row 3: Road Frontage | Plot Shape */}
       <div className="form-field">
         <label className="form-label" htmlFor="roadFrontageWidth">
           Road Frontage Width (ft)
-          <span style={{ color:'var(--text-muted)', fontWeight:400, marginLeft:'6px', fontSize:'11px' }}>(optional · wider = higher value)</span>
+          <span>(optional)</span>
         </label>
         <input id="roadFrontageWidth" type="number" onKeyDown={(e) => ['e', 'E', '+', '-'].includes(e.key) && e.preventDefault()} min={10} max={500}
           className={`form-input ${errors.roadFrontageWidth ? 'input-error' : ''}`}
@@ -366,11 +444,13 @@ function TypeSpecFields({ form, errors, setField }) {
         <label className="form-label" htmlFor="plotShape">Plot Shape
           <span style={{ color:'var(--text-muted)', fontWeight:400, marginLeft:'6px', fontSize:'11px' }}>(irregular = price discount)</span>
         </label>
-        <select id="plotShape" className="form-select"
-          value={form.plotShape} onChange={e => setField('plotShape', e.target.value)}>
-          <option value="">— Select Shape —</option>
-          {PLOT_SHAPES.map(s => <option key={s} value={s}>{s}</option>)}
-        </select>
+        <SearchableSelect
+          id="plotShape"
+          options={PLOT_SHAPES}
+          value={form.plotShape}
+          onChange={e => setField('plotShape', e.target.value)}
+          placeholder="Select shape..."
+        />
       </div>
     </div>
   );
@@ -388,12 +468,15 @@ function TypeSpecFields({ form, errors, setField }) {
       </div>
       {carpetField}
       <div className="form-field">
-        <label className="form-label" htmlFor="kitchenType">Kitchen Type * <span style={{ color:'#fbbf24', marginLeft:'6px', fontSize:'10px', fontWeight:600, textTransform:'uppercase', letterSpacing:'0.5px' }}>🔑 KEY ML FACTOR</span></label>
-        <select id="kitchenType" className={`form-select ${errors.kitchenType ? 'input-error' : ''}`}
-          value={form.kitchenType} onChange={e => setField('kitchenType', e.target.value)}>
-          <option value="">— Select Kitchen —</option>
-          {KITCHEN_TYPES.map(k => <option key={k} value={k}>{k}</option>)}
-        </select>
+        <label className="form-label" htmlFor="kitchenType">Kitchen Type * <span className="ml-badge">🔑 KEY ML FACTOR</span></label>
+        <SearchableSelect
+          id="kitchenType"
+          options={KITCHEN_TYPES}
+          value={form.kitchenType}
+          onChange={e => setField('kitchenType', e.target.value)}
+          placeholder="Select kitchen..."
+          error={errors.kitchenType}
+        />
         <FieldError msg={errors.kitchenType} />
       </div>
       <div className="form-field">
@@ -422,11 +505,14 @@ function TypeSpecFields({ form, errors, setField }) {
       </div>
       <div className="form-field">
         <label className="form-label" htmlFor="furnished">Furnishing Status *</label>
-        <select id="furnished" className={`form-select ${errors.furnished ? 'input-error' : ''}`}
-          value={form.furnished} onChange={e => setField('furnished', e.target.value)}>
-          <option value="">— Select —</option>
-          {FURNISHED_OPTIONS.map(f => <option key={f} value={f}>{f}</option>)}
-        </select>
+        <SearchableSelect
+          id="furnished"
+          options={FURNISHED_OPTIONS}
+          value={form.furnished}
+          onChange={e => setField('furnished', e.target.value)}
+          placeholder="Select status..."
+          error={errors.furnished}
+        />
         <FieldError msg={errors.furnished} />
       </div>
       <div className="form-field" style={{ gridColumn: 'span 3' }}>
@@ -449,43 +535,58 @@ function TypeSpecFields({ form, errors, setField }) {
       {/* Row 1: BHK | Bathrooms | Villa Floors */}
       <div className="form-field">
         <label className="form-label" htmlFor="bhk">Bedrooms (BHK) *</label>
-        <select id="bhk" className={`form-select ${errors.bhk ? 'input-error' : ''}`}
-          value={form.bhk} onChange={e => setField('bhk', e.target.value)}>
-          <option value="">— Select BHK —</option>
-          {bhkOptions.map(n => (
-            <option key={n} value={n}>{n} BHK {minArea && minArea[n] ? `(min ${minArea[n].toLocaleString()} sqft)` : ''}</option>
-          ))}
-        </select>
+        <SearchableSelect
+          id="bhk"
+          options={bhkOptions.map(n => ({
+            label: `${n} BHK ${minArea && minArea[n] ? `(min ${minArea[n].toLocaleString()} sqft)` : ''}`,
+            value: n
+          }))}
+          value={form.bhk}
+          onChange={e => setField('bhk', e.target.value)}
+          placeholder="Select BHK..."
+          error={errors.bhk}
+        />
         <FieldError msg={errors.bhk} />
       </div>
       <div className="form-field">
         <label className="form-label" htmlFor="bathrooms">Bathrooms *
-          {form.bhk && <span style={{ color:'var(--text-muted)', fontWeight:400, marginLeft:'6px', fontSize:'11px', whiteSpace:'nowrap' }}>(max {maxBath(pt, bhk)})</span>}
+          {form.bhk && <span>(max {maxBath(pt, bhk)})</span>}
         </label>
-        <select id="bathrooms" className={`form-select ${errors.bathrooms ? 'input-error' : ''}`}
-          value={form.bathrooms} onChange={e => setField('bathrooms', e.target.value)} disabled={!form.bhk}>
-          <option value="">{form.bhk ? '— Select —' : '— Select BHK first —'}</option>
-          {Array.from({ length: maxBath(pt, bhk) }, (_, i) => i + 1).map(n => (
-            <option key={n} value={n}>{n} Bathroom{n > 1 ? 's' : ''}</option>
-          ))}
-        </select>
+        <SearchableSelect
+          id="bathrooms"
+          options={Array.from({ length: maxBath(pt, bhk) }, (_, i) => i + 1).map(n => ({
+            label: `${n} Bathroom${n > 1 ? 's' : ''}`,
+            value: n
+          }))}
+          value={form.bathrooms}
+          onChange={e => setField('bathrooms', e.target.value)}
+          placeholder={form.bhk ? "Select bathrooms..." : "Select BHK first"}
+          disabled={!form.bhk}
+          error={errors.bathrooms}
+        />
         <FieldError msg={errors.bathrooms} />
       </div>
       <div className="form-field">
         <label className="form-label" htmlFor="villaFloors">No. of Floors in {pt} *</label>
-        <select id="villaFloors" className={`form-select ${errors.villaFloors ? 'input-error' : ''}`}
-          value={form.villaFloors} onChange={e => setField('villaFloors', e.target.value)}>
-          <option value="1">G (Ground only — Single Storey)</option>
-          <option value="2">G+1 (Two Storey)</option>
-          <option value="3">G+2 (Three Storey)</option>
-          {pt === 'Villa' && <option value="4">G+3 (Four Storey)</option>}
-        </select>
+        <SearchableSelect
+          id="villaFloors"
+          options={[
+            { label: 'G (Ground only — Single Storey)', value: '1' },
+            { label: 'G+1 (Two Storey)', value: '2' },
+            { label: 'G+2 (Three Storey)', value: '3' },
+            ...(pt === 'Villa' ? [{ label: 'G+3 (Four Storey)', value: '4' }] : [])
+          ]}
+          value={form.villaFloors}
+          onChange={e => setField('villaFloors', e.target.value)}
+          placeholder="Select floors..."
+          error={errors.villaFloors}
+        />
         <FieldError msg={errors.villaFloors} />
       </div>
       {/* Row 2: Built-up | Plot Area | Carpet */}
       <div className="form-field">
         <label className="form-label" htmlFor="area">Built-up Area (sq ft) *
-          {form.bhk && <span style={{ color:'var(--text-muted)', fontWeight:400, marginLeft:'6px' }}>min {(minArea && minArea[bhk] || 0).toLocaleString()} sqft</span>}
+          {form.bhk && <span>(min {(minArea && minArea[bhk] || 0).toLocaleString()})</span>}
         </label>
         <input id="area" type="number" onKeyDown={(e) => ['e', 'E', '+', '-'].includes(e.key) && e.preventDefault()} min={minForBHK || 500} max={50000}
           className={`form-input ${errors.area ? 'input-error' : ''}`}
@@ -495,7 +596,7 @@ function TypeSpecFields({ form, errors, setField }) {
       </div>
       <div className="form-field">
         <label className="form-label" htmlFor="plotArea">Plot / Land Area (sq ft) *
-          <span style={{ color:'#f59e0b', fontWeight:600, marginLeft:'6px', fontSize:'11px' }}>🔑 Key ML factor</span>
+          <span className="ml-badge">🔑 Key ML factor</span>
         </label>
         <input id="plotArea" type="number" onKeyDown={(e) => ['e', 'E', '+', '-'].includes(e.key) && e.preventDefault()} min={200} max={50000}
           className={`form-input ${errors.plotArea ? 'input-error' : ''}`}
@@ -515,29 +616,43 @@ function TypeSpecFields({ form, errors, setField }) {
       </div>
       <div className="form-field">
         <label className="form-label" htmlFor="furnished">Furnishing Status *</label>
-        <select id="furnished" className={`form-select ${errors.furnished ? 'input-error' : ''}`}
-          value={form.furnished} onChange={e => setField('furnished', e.target.value)}>
-          <option value="">— Select —</option>
-          {FURNISHED_OPTIONS.map(f => <option key={f} value={f}>{f}</option>)}
-        </select>
+        <SearchableSelect
+          id="furnished"
+          options={FURNISHED_OPTIONS}
+          value={form.furnished}
+          onChange={e => setField('furnished', e.target.value)}
+          placeholder="Select status..."
+          error={errors.furnished}
+        />
         <FieldError msg={errors.furnished} />
       </div>
       <div className="form-field">
         <label className="form-label" htmlFor="parkingSpots">Parking Spots</label>
-        <select id="parkingSpots" className="form-select"
-          value={form.parkingSpots} onChange={e => setField('parkingSpots', e.target.value)}>
-          <option value="">— Select —</option>
-          {['1', '2', '3', '4+'].map(n => <option key={n} value={n}>{n} Car{n !== '1' ? 's' : ''}</option>)}
-        </select>
+        <SearchableSelect
+          id="parkingSpots"
+          options={['1', '2', '3', '4+'].map(n => ({
+            label: `${n} Car${n !== '1' ? 's' : ''}`,
+            value: n
+          }))}
+          value={form.parkingSpots}
+          onChange={e => setField('parkingSpots', e.target.value)}
+          placeholder="Select parking..."
+        />
       </div>
       {/* Row 4: Servant Rooms (Villa only) */}
       {pt === 'Villa' && (
         <div className="form-field">
           <label className="form-label" htmlFor="servantRooms">Servant Rooms</label>
-          <select id="servantRooms" className="form-select"
-            value={form.servantRooms} onChange={e => setField('servantRooms', e.target.value)}>
-            {[0, 1, 2].map(n => <option key={n} value={n}>{n} {n === 0 ? '(None)' : ''}</option>)}
-          </select>
+            <SearchableSelect
+              id="servantRooms"
+              options={[0, 1, 2].map(n => ({
+                label: `${n} ${n === 0 ? '(None)' : n === 1 ? 'Servant Room' : 'Servant Rooms'}`,
+                value: n
+              }))}
+              value={form.servantRooms}
+              onChange={e => setField('servantRooms', e.target.value)}
+              placeholder="Select rooms..."
+            />
         </div>
       )}
       {/* Toggles */}
@@ -570,31 +685,40 @@ function TypeSpecFields({ form, errors, setField }) {
       {/* Row 1: BHK | Bathrooms | Private Terrace Area */}
       <div className="form-field">
         <label className="form-label" htmlFor="bhk">Bedrooms (BHK) *</label>
-        <select id="bhk" className={`form-select ${errors.bhk ? 'input-error' : ''}`}
-          value={form.bhk} onChange={e => setField('bhk', e.target.value)}>
-          <option value="">— Select BHK —</option>
-          {bhkOptions.map(n => (
-            <option key={n} value={n}>{n} BHK {minArea && minArea[n] ? `(min ${minArea[n].toLocaleString()} sqft)` : ''}</option>
-          ))}
-        </select>
+        <SearchableSelect
+          id="bhk"
+          options={bhkOptions.map(n => ({
+            label: `${n} BHK ${minArea && minArea[n] ? `(min ${minArea[n].toLocaleString()} sqft)` : ''}`,
+            value: n
+          }))}
+          value={form.bhk}
+          onChange={e => setField('bhk', e.target.value)}
+          placeholder="Select BHK..."
+          error={errors.bhk}
+        />
         <FieldError msg={errors.bhk} />
       </div>
       <div className="form-field">
         <label className="form-label" htmlFor="bathrooms">Bathrooms *
-          {form.bhk && <span style={{ color:'var(--text-muted)', fontWeight:400, marginLeft:'6px', fontSize:'11px', whiteSpace:'nowrap' }}>(max {maxBath(pt, bhk)})</span>}
+          {form.bhk && <span>(max {maxBath(pt, bhk)})</span>}
         </label>
-        <select id="bathrooms" className={`form-select ${errors.bathrooms ? 'input-error' : ''}`}
-          value={form.bathrooms} onChange={e => setField('bathrooms', e.target.value)} disabled={!form.bhk}>
-          <option value="">{form.bhk ? '— Select —' : '— Select BHK first —'}</option>
-          {Array.from({ length: maxBath(pt, bhk) }, (_, i) => i + 1).map(n => (
-            <option key={n} value={n}>{n} Bathroom{n > 1 ? 's' : ''}</option>
-          ))}
-        </select>
+        <SearchableSelect
+          id="bathrooms"
+          options={Array.from({ length: maxBath(pt, bhk) }, (_, i) => i + 1).map(n => ({
+            label: `${n} Bathroom${n > 1 ? 's' : ''}`,
+            value: n
+          }))}
+          value={form.bathrooms}
+          onChange={e => setField('bathrooms', e.target.value)}
+          placeholder={form.bhk ? "Select bathrooms..." : "Select BHK first"}
+          disabled={!form.bhk}
+          error={errors.bathrooms}
+        />
         <FieldError msg={errors.bathrooms} />
       </div>
       <div className="form-field">
         <label className="form-label" htmlFor="terraceArea">Private Terrace Area (sq ft) *
-          <span style={{ color:'#f59e0b', fontWeight:600, marginLeft:'6px', fontSize:'11px' }}>🔑 Key ML factor</span>
+          <span className="ml-badge">🔑 Key ML factor</span>
         </label>
         <input id="terraceArea" type="number" onKeyDown={(e) => ['e', 'E', '+', '-'].includes(e.key) && e.preventDefault()} min={100}
           className={`form-input ${errors.terraceArea ? 'input-error' : ''}`}
@@ -605,7 +729,7 @@ function TypeSpecFields({ form, errors, setField }) {
       {/* Row 2: Built-up | Carpet | Age */}
       <div className="form-field">
         <label className="form-label" htmlFor="area">Built-up Area (sq ft) *
-          {form.bhk && <span style={{ color:'var(--text-muted)', fontWeight:400, marginLeft:'6px' }}>min {(minArea && minArea[bhk] || 0).toLocaleString()} sqft</span>}
+          {form.bhk && <span>(min {(minArea && minArea[bhk] || 0).toLocaleString()})</span>}
         </label>
         <input id="area" type="number" onKeyDown={(e) => ['e', 'E', '+', '-'].includes(e.key) && e.preventDefault()} min={minForBHK || 1500} max={30000}
           className={`form-input ${errors.area ? 'input-error' : ''}`}
@@ -646,28 +770,42 @@ function TypeSpecFields({ form, errors, setField }) {
       </div>
       <div className="form-field">
         <label className="form-label" htmlFor="furnished">Furnishing Status *</label>
-        <select id="furnished" className={`form-select ${errors.furnished ? 'input-error' : ''}`}
-          value={form.furnished} onChange={e => setField('furnished', e.target.value)}>
-          <option value="">— Select —</option>
-          {FURNISHED_OPTIONS.map(f => <option key={f} value={f}>{f}</option>)}
-        </select>
+        <SearchableSelect
+          id="furnished"
+          options={FURNISHED_OPTIONS}
+          value={form.furnished}
+          onChange={e => setField('furnished', e.target.value)}
+          placeholder="Select status..."
+          error={errors.furnished}
+        />
         <FieldError msg={errors.furnished} />
       </div>
       {/* Row 4: Servant Rooms | Parking Spots */}
       <div className="form-field">
         <label className="form-label" htmlFor="servantRooms">Servant Rooms</label>
-        <select id="servantRooms" className="form-select"
-          value={form.servantRooms} onChange={e => setField('servantRooms', e.target.value)}>
-          {[0, 1, 2, 3].map(n => <option key={n} value={n}>{n} {n === 0 ? '(None)' : ''}</option>)}
-        </select>
+        <SearchableSelect
+          id="servantRooms"
+          options={[0, 1, 2, 3].map(n => ({
+            label: `${n} ${n === 0 ? '(None)' : n === 1 ? 'Servant Room' : 'Servant Rooms'}`,
+            value: n
+          }))}
+          value={form.servantRooms}
+          onChange={e => setField('servantRooms', e.target.value)}
+          placeholder="Select rooms..."
+        />
       </div>
       <div className="form-field">
         <label className="form-label" htmlFor="parkingSpots">Parking Spots</label>
-        <select id="parkingSpots" className="form-select"
-          value={form.parkingSpots} onChange={e => setField('parkingSpots', e.target.value)}>
-          <option value="">— Select —</option>
-          {['1', '2', '3'].map(n => <option key={n} value={n}>{n} Car{n !== '1' ? 's' : ''}</option>)}
-        </select>
+        <SearchableSelect
+          id="parkingSpots"
+          options={['1', '2', '3'].map(n => ({
+            label: `${n} Car${n !== '1' ? 's' : ''}`,
+            value: n
+          }))}
+          value={form.parkingSpots}
+          onChange={e => setField('parkingSpots', e.target.value)}
+          placeholder="Select parking..."
+        />
       </div>
       {/* Penthouse luxury toggles */}
       <div className="form-field" style={{ gridColumn: 'span 3' }}>
@@ -696,42 +834,58 @@ function TypeSpecFields({ form, errors, setField }) {
       {/* Row 1: BHK | Bathrooms | Balconies */}
       <div className="form-field">
         <label className="form-label" htmlFor="bhk">Bedrooms (BHK) *</label>
-        <select id="bhk" className={`form-select ${errors.bhk ? 'input-error' : ''}`}
-          value={form.bhk} onChange={e => setField('bhk', e.target.value)}>
-          <option value="">— Select BHK —</option>
-          {bhkOptions.map(n => (
-            <option key={n} value={n}>{n} BHK {minArea && minArea[n] ? `(min ${minArea[n].toLocaleString()} sqft)` : ''}</option>
-          ))}
-        </select>
+        <SearchableSelect
+          id="bhk"
+          options={bhkOptions.map(n => ({
+            label: `${n} BHK ${minArea && minArea[n] ? `(min ${minArea[n].toLocaleString()} sqft)` : ''}`,
+            value: n
+          }))}
+          value={form.bhk}
+          onChange={e => setField('bhk', e.target.value)}
+          placeholder="Select BHK..."
+          error={errors.bhk}
+        />
         <FieldError msg={errors.bhk} />
       </div>
       <div className="form-field">
         <label className="form-label" htmlFor="bathrooms">Bathrooms *
-          {form.bhk && <span style={{ color:'var(--text-muted)', fontWeight:400, marginLeft:'6px', fontSize:'11px', whiteSpace:'nowrap' }}>(max {maxBath(pt, bhk)})</span>}
+          {form.bhk && <span>(max {maxBath(pt, bhk)})</span>}
         </label>
-        <select id="bathrooms" className={`form-select ${errors.bathrooms ? 'input-error' : ''}`}
-          value={form.bathrooms} onChange={e => setField('bathrooms', e.target.value)} disabled={!form.bhk}>
-          <option value="">{form.bhk ? '— Select —' : '— Select BHK first —'}</option>
-          {Array.from({ length: maxBath(pt, bhk) }, (_, i) => i + 1).map(n => (
-            <option key={n} value={n}>{n} Bathroom{n > 1 ? 's' : ''}</option>
-          ))}
-        </select>
+        <SearchableSelect
+          id="bathrooms"
+          options={Array.from({ length: maxBath(pt, bhk) }, (_, i) => i + 1).map(n => ({
+            label: `${n} Bathroom${n > 1 ? 's' : ''}`,
+            value: n
+          }))}
+          value={form.bathrooms}
+          onChange={e => setField('bathrooms', e.target.value)}
+          placeholder={form.bhk ? "Select bathrooms..." : "Select BHK first"}
+          disabled={!form.bhk}
+          error={errors.bathrooms}
+        />
         <FieldError msg={errors.bathrooms} />
       </div>
       <div className="form-field">
         <label className="form-label" htmlFor="balconies">Balconies
           {form.bhk && <span style={{ color:'var(--text-muted)', fontWeight:400, marginLeft:'6px', fontSize:'11px' }}>(max {bhk + 1})</span>}
         </label>
-        <select id="balconies" className={`form-select ${errors.balconies ? 'input-error' : ''}`}
-          value={form.balconies} onChange={e => setField('balconies', e.target.value)} disabled={!form.bhk}>
-          <option value="">{form.bhk ? '— Select —' : '— Select BHK first —'}</option>
-          {Array.from({ length: Math.min(bhk + 2, 5) }, (_, i) => i).map(n => <option key={n} value={n}>{n} {n === 0 ? '(None)' : `Balcon${n === 1 ? 'y' : 'ies'}`}</option>)}
-        </select>
+        <SearchableSelect
+          id="balconies"
+          options={Array.from({ length: Math.min(bhk + 2, 5) }, (_, i) => i).map(n => ({
+            label: `${n} ${n === 0 ? '(None)' : `Balcon${n === 1 ? 'y' : 'ies'}`}`,
+            value: n
+          }))}
+          value={form.balconies}
+          onChange={e => setField('balconies', e.target.value)}
+          placeholder={form.bhk ? "Select balconies..." : "Select BHK first"}
+          disabled={!form.bhk}
+          error={errors.balconies}
+        />
       </div>
       {/* Row 2: Built-up | Carpet | Age */}
       <div className="form-field">
         <label className="form-label" htmlFor="area">Built-up Area (sq ft) *
-          {form.bhk && <span style={{ color:'var(--text-muted)', fontWeight:400, marginLeft:'6px' }}>min {(minArea && minArea[bhk] || 0).toLocaleString()} sqft</span>}
+          {form.bhk && <span>(min {(minArea && minArea[bhk] || 0).toLocaleString()})</span>}
         </label>
         <input id="area" type="number" onKeyDown={(e) => ['e', 'E', '+', '-'].includes(e.key) && e.preventDefault()} min={minForBHK || 400} max={8000}
           className={`form-input ${errors.area ? 'input-error' : ''}`}
@@ -751,38 +905,49 @@ function TypeSpecFields({ form, errors, setField }) {
       {/* Row 3: Floor | Total Floors | Furnishing */}
       <div className="form-field">
         <label className="form-label" htmlFor="floor">Floor in Building *</label>
-        <select id="floor" className={`form-select ${errors.floor ? 'input-error' : ''}`}
-          value={form.floor} onChange={e => setField('floor', e.target.value)}>
-          <option value="">— Select Floor —</option>
-          <option value="0">Ground Floor</option>
-          <option value="1">1st Floor</option>
-          <option value="2">2nd Floor</option>
-          <option value="3">3rd Floor</option>
-          <option value="4">4th Floor</option>
-        </select>
+        <SearchableSelect
+          id="floor"
+          options={[
+            { label: 'Ground Floor', value: '0' },
+            { label: '1st Floor', value: '1' },
+            { label: '2nd Floor', value: '2' },
+            { label: '3rd Floor', value: '3' },
+            { label: '4th Floor', value: '4' }
+          ]}
+          value={form.floor}
+          onChange={e => setField('floor', e.target.value)}
+          placeholder="Select floor..."
+          error={errors.floor}
+        />
         <FieldError msg={errors.floor} />
       </div>
       <div className="form-field">
         <label className="form-label" htmlFor="totalFloors">Total Floors in Building *</label>
-        <select id="totalFloors" className={`form-select ${errors.totalFloors ? 'input-error' : ''}`}
-          value={form.totalFloors} onChange={e => setField('totalFloors', e.target.value)}>
-          <option value="">— Select —</option>
-          {[2, 3, 4, 5, 6].map(n => <option key={n} value={n}>G+{n-1} ({n} floors)</option>)}
-        </select>
+        <SearchableSelect
+          id="totalFloors"
+          options={[2, 3, 4, 5, 6].map(n => ({ label: `G+${n-1} (${n} floors)`, value: String(n) }))}
+          value={form.totalFloors}
+          onChange={e => setField('totalFloors', e.target.value)}
+          placeholder="Select floors..."
+          error={errors.totalFloors}
+        />
         <FieldError msg={errors.totalFloors} />
       </div>
       <div className="form-field">
         <label className="form-label" htmlFor="furnished">Furnishing Status *</label>
-        <select id="furnished" className={`form-select ${errors.furnished ? 'input-error' : ''}`}
-          value={form.furnished} onChange={e => setField('furnished', e.target.value)}>
-          <option value="">— Select —</option>
-          {FURNISHED_OPTIONS.map(f => <option key={f} value={f}>{f}</option>)}
-        </select>
+        <SearchableSelect
+          id="furnished"
+          options={FURNISHED_OPTIONS}
+          value={form.furnished}
+          onChange={e => setField('furnished', e.target.value)}
+          placeholder="Select status..."
+          error={errors.furnished}
+        />
         <FieldError msg={errors.furnished} />
       </div>
       {/* Builder Floor critical toggles */}
       <div className="form-field" style={{ gridColumn: 'span 3' }}>
-        <label className="form-label">Builder Floor Features <span style={{ color:'#f59e0b', fontSize:'11px' }}>(critical for accurate valuation)</span></label>
+        <label className="form-label">Builder Floor Features <span>(critical for valuation)</span></label>
         <div className="form-toggle-group" style={{ flexWrap: 'wrap' }}>
           <ToggleBtn id="indep-entry" active={form.independentEntry === true}
             onClick={() => setField('independentEntry', form.independentEntry === true ? null : true)}
@@ -804,43 +969,57 @@ function TypeSpecFields({ form, errors, setField }) {
       {/* Row 1: BHK | Bathrooms | Balconies */}
       <div className="form-field">
         <label className="form-label" htmlFor="bhk">Bedrooms (BHK) *</label>
-        <select id="bhk" className={`form-select ${errors.bhk ? 'input-error' : ''}`}
-          value={form.bhk} onChange={e => setField('bhk', e.target.value)}>
-          <option value="">— Select BHK —</option>
-          {bhkOptions.map(n => (
-            <option key={n} value={n}>{n} BHK {minArea && minArea[n] ? `(min ${minArea[n].toLocaleString()} sqft)` : ''}</option>
-          ))}
-        </select>
+        <SearchableSelect
+          id="bhk"
+          options={bhkOptions.map(n => ({
+            label: `${n} BHK ${minArea && minArea[n] ? `(min ${minArea[n].toLocaleString()} sqft)` : ''}`,
+            value: n
+          }))}
+          value={form.bhk}
+          onChange={e => setField('bhk', e.target.value)}
+          placeholder="Search BHK..."
+          error={errors.bhk}
+        />
         <FieldError msg={errors.bhk} />
       </div>
       <div className="form-field">
         <label className="form-label" htmlFor="bathrooms">Bathrooms *
-          {form.bhk && <span style={{ color:'var(--text-muted)', fontWeight:400, marginLeft:'6px', fontSize:'11px', whiteSpace:'nowrap' }}>(max {maxBath(pt, bhk)})</span>}
+          {form.bhk && <span>(max {maxBath(pt, bhk)})</span>}
         </label>
-        <select id="bathrooms" className={`form-select ${errors.bathrooms ? 'input-error' : ''}`}
-          value={form.bathrooms} onChange={e => setField('bathrooms', e.target.value)} disabled={!form.bhk}>
-          <option value="">{form.bhk ? '— Select —' : '— Select BHK first —'}</option>
-          {Array.from({ length: maxBath(pt, bhk) }, (_, i) => i + 1).map(n => (
-            <option key={n} value={n}>{n} Bathroom{n > 1 ? 's' : ''}</option>
-          ))}
-        </select>
+        <SearchableSelect
+          id="bathrooms"
+          options={Array.from({ length: maxBath(pt, bhk) }, (_, i) => i + 1).map(n => ({
+            label: `${n} Bathroom${n > 1 ? 's' : ''}`,
+            value: n
+          }))}
+          value={form.bathrooms}
+          onChange={e => setField('bathrooms', e.target.value)}
+          placeholder={form.bhk ? "Select bathrooms..." : "Select BHK first"}
+          disabled={!form.bhk}
+          error={errors.bathrooms}
+        />
         <FieldError msg={errors.bathrooms} />
       </div>
       <div className="form-field">
-        <label className="form-label" htmlFor="balconies">Balconies *
-          {form.bhk && <span style={{ color:'var(--text-muted)', fontWeight:400, marginLeft:'6px', fontSize:'11px' }}>(max {bhk + 1})</span>}
-        </label>
-        <select id="balconies" className={`form-select ${errors.balconies ? 'input-error' : ''}`}
-          value={form.balconies} onChange={e => setField('balconies', e.target.value)} disabled={!form.bhk}>
-          <option value="">{form.bhk ? '— Select —' : '— Select BHK first —'}</option>
-          {Array.from({ length: Math.min(bhk + 2, 6) }, (_, i) => i).map(n => <option key={n} value={n}>{n} {n === 0 ? '(No balcony)' : `Balcon${n === 1 ? 'y' : 'ies'}`}</option>)}
-        </select>
+        <label className="form-label" htmlFor="balconies">Balconies * <span>(max {bhk + 1})</span></label>
+        <SearchableSelect
+          id="balconies"
+          options={Array.from({ length: Math.min(bhk + 2, 6) }, (_, i) => i).map(n => ({
+            label: `${n} ${n === 0 ? '(No balcony)' : `Balcon${n === 1 ? 'y' : 'ies'}`}`,
+            value: n
+          }))}
+          value={form.balconies}
+          onChange={e => setField('balconies', e.target.value)}
+          placeholder={form.bhk ? "Select balconies..." : "Select BHK first"}
+          disabled={!form.bhk}
+          error={errors.balconies}
+        />
         <FieldError msg={errors.balconies} />
       </div>
       {/* Row 2: Built-up | Carpet | Age */}
       <div className="form-field">
         <label className="form-label" htmlFor="area">Built-up Area (sq ft) *
-          {form.bhk && <span style={{ color:'var(--text-muted)', fontWeight:400, marginLeft:'6px' }}>min {(minArea && minArea[bhk] || 0).toLocaleString()} sqft</span>}
+          {form.bhk && <span>(min {(minArea && minArea[bhk] || 0).toLocaleString()})</span>}
         </label>
         <input id="area" type="number" onKeyDown={(e) => ['e', 'E', '+', '-'].includes(e.key) && e.preventDefault()} min={minForBHK || 150} max={10000}
           className={`form-input ${errors.area ? 'input-error' : ''}`}
@@ -878,11 +1057,14 @@ function TypeSpecFields({ form, errors, setField }) {
       </div>
       <div className="form-field">
         <label className="form-label" htmlFor="furnished">Furnishing Status *</label>
-        <select id="furnished" className={`form-select ${errors.furnished ? 'input-error' : ''}`}
-          value={form.furnished} onChange={e => setField('furnished', e.target.value)}>
-          <option value="">— Select —</option>
-          {FURNISHED_OPTIONS.map(f => <option key={f} value={f}>{f}</option>)}
-        </select>
+        <SearchableSelect
+          id="furnished"
+          options={FURNISHED_OPTIONS}
+          value={form.furnished}
+          onChange={e => setField('furnished', e.target.value)}
+          placeholder="Select status..."
+          error={errors.furnished}
+        />
         <FieldError msg={errors.furnished} />
       </div>
     </div>
@@ -1001,9 +1183,67 @@ export default function PropertyForm({ onAnalyze }) {
   const [form, setForm]       = useState(DEFAULT_FORM);
   const [errors, setErrors]   = useState({});
   const [touched, setTouched] = useState({});
+  const [didTryNext, setDidTryNext] = useState(false);
+  const [lockButtons, setLockButtons] = useState(false);
+  const [isMapOpen, setIsMapOpen] = useState(false);
 
-  const cities     = form.state ? (STATE_CITIES[form.state] || [])       : [];
-  const localities = form.city  ? (CITY_LOCALITIES[form.city] || ['Other']) : [];
+  const handleMapLocationSelect = (address) => {
+    const detectedState = address.state;
+    const detectedCity = address.city || address.town || address.village || address.district || address.county;
+    const detectedLocality = address.suburb || address.neighbourhood || address.road || address.hamlet || address.village;
+
+    // Find closest state match
+    const stateMatch = STATES.find(s => 
+      detectedState && (s.toLowerCase().includes(detectedState.toLowerCase()) || detectedState.toLowerCase().includes(s.toLowerCase()))
+    );
+
+    if (stateMatch) {
+      setField('state', stateMatch);
+      const stateCitiesList = STATE_CITIES[stateMatch] || [];
+      const cityMatch = stateCitiesList.find(c => 
+        detectedCity && (c.toLowerCase().includes(detectedCity.toLowerCase()) || detectedCity.toLowerCase().includes(c.toLowerCase()))
+      );
+
+      if (cityMatch) {
+        setField('city', cityMatch);
+        const cityLocalitiesList = CITY_LOCALITIES[cityMatch] || [];
+        const locMatch = cityLocalitiesList.find(l => 
+          detectedLocality && (l.toLowerCase().includes(detectedLocality.toLowerCase()) || detectedLocality.toLowerCase().includes(l.toLowerCase()))
+        );
+        if (locMatch) setField('locality', locMatch);
+        else if (detectedLocality) setField('locality', detectedLocality);
+      } else if (detectedCity) {
+        setField('city', detectedCity);
+        if (detectedLocality) setField('locality', detectedLocality);
+      }
+    } else {
+      if (detectedState) setField('state', detectedState);
+      if (detectedCity) setField('city', detectedCity);
+      if (detectedLocality) setField('locality', detectedLocality);
+    }
+  };
+
+  // Prevent double-click skipping from Step 3 -> 4 -> Analyze
+  useEffect(() => {
+    setLockButtons(true);
+    const t = setTimeout(() => setLockButtons(false), 150);
+    return () => clearTimeout(t);
+  }, [currentStep]);
+
+  // Define which fields belong to which step for scoped validation
+  const STEP_FIELDS = {
+    1: ['state', 'city', 'locality', 'localityDemand'],
+    2: ['propertyType'],
+    3: ['bhk', 'bathrooms', 'balconies', 'area', 'carpetArea', 'age', 'floor', 'totalFloors', 'plotArea', 'villaFloors', 'terraceArea', 'kitchenType', 'zoneClassification', 'legalStatus', 'roadType', 'roadFrontageWidth', 'plotShape', 'furnished'],
+    4: ['amenities', 'parking', 'gatedSociety', 'brokerQuote']
+  };
+
+
+  const citiesRaw  = form.state ? (STATE_CITIES[form.state] || []) : [];
+  const cities     = [...new Set([...citiesRaw, form.city].filter(Boolean))];
+
+  const localitiesRaw = form.city ? (CITY_LOCALITIES[form.city] || ['Other']) : [];
+  const localities = [...new Set([...localitiesRaw, form.locality].filter(Boolean))];
 
   function setField(key, val) {
     let nextFormState;
@@ -1050,21 +1290,47 @@ export default function PropertyForm({ onAnalyze }) {
       const all = validate(nextFormState || { ...form, [key]: val });
       const out = {};
       const currentTouched = nextTouchedState || touched;
-      Object.keys(all).forEach(k => { if (currentTouched[k] || k === key) out[k] = all[k]; });
+      
+      // Only show errors for fields in current or previous steps that are touched
+      const relevantFields = [];
+      for(let i=1; i<=currentStep; i++) relevantFields.push(...STEP_FIELDS[i]);
+      
+      Object.keys(all).forEach(k => { 
+        if ((currentTouched[k] || k === key) && relevantFields.includes(k)) {
+          out[k] = all[k]; 
+        }
+      });
       return out;
     });
   }
+
 
   const toggleAmenity = a => setField('amenities',
     form.amenities.includes(a) ? form.amenities.filter(x => x !== a) : [...form.amenities, a]
   );
 
   const handleSubmit = e => {
-    e.preventDefault();
+    if (e && typeof e.preventDefault === 'function') e.preventDefault();
+    if (currentStep < 4) {
+      handleNextStep();
+      return;
+    }
     setTouched(Object.keys(DEFAULT_FORM).reduce((o, k) => ({ ...o, [k]: true }), {}));
     const errs = validate(form);
     setErrors(errs);
-    if (Object.keys(errs).length > 0) return;
+    setDidTryNext(true); // Enable error banners on submission attempt
+    
+    if (Object.keys(errs).length > 0) {
+      for (let i = 1; i <= 4; i++) {
+        const stepFields = STEP_FIELDS[i] || [];
+        if (stepFields.some(k => errs[k])) {
+          if (currentStep !== i) setCurrentStep(i);
+          return;
+        }
+      }
+      return;
+    }
+    
     onAnalyze({
       ...form,
       area: Number(form.area), bhk: Number(form.bhk), age: Number(form.age),
@@ -1098,44 +1364,43 @@ export default function PropertyForm({ onAnalyze }) {
         (isStudio_f ? form.kitchenType : true)
       );
 
-  const totalErrors = Object.keys(errors).length;
+  // Calculate errors only for the current step to show in the bottom banner
+  const stepErrors = Object.keys(errors).filter(k => STEP_FIELDS[currentStep]?.includes(k));
+  const totalStepErrors = stepErrors.length;
 
   const handleNextStep = () => {
-    setTouched(Object.keys(form).reduce((o, k) => ({ ...o, [k]: true }), {}));
-    const errs = validate(form);
-    setErrors(errs);
+    setDidTryNext(true);
+    // Only mark fields in the CURRENT step as touched
+    const currentStepFields = STEP_FIELDS[currentStep] || [];
+    const newTouched = { ...touched };
+    currentStepFields.forEach(k => newTouched[k] = true);
+    setTouched(newTouched);
+
+    const allErrors = validate(form);
+    const stepHasErrors = currentStepFields.some(k => allErrors[k]);
     
-    if (currentStep === 1) {
-      if (!errs.state && !errs.city && !errs.locality && !errs.localityDemand) {
-        setCurrentStep(2);
-        setTouched({});
-      }
-    } else if (currentStep === 2) {
-      if (!errs.propertyType) {
-        setCurrentStep(3);
-        setTouched({});
-      }
-    } else if (currentStep === 3) {
-      // For land, specs validation is different
-      if (isLand_f) {
-        if (!errs.plotArea && !errs.zoneClassification && !errs.legalStatus) {
-           setCurrentStep(4);
-           setTouched({});
-        }
-      } else {
-        if (!errs.bhk && !errs.bathrooms && !errs.area && !errs.age && !errs.floor && !errs.totalFloors && !errs.plotArea && !errs.villaFloors && !errs.terraceArea && !errs.kitchenType) {
-          setCurrentStep(4);
-          setTouched({});
-        }
-      }
+    // Update errors state with current step's errors
+    const nextErrors = {};
+    Object.keys(allErrors).forEach(k => {
+      if (newTouched[k]) nextErrors[k] = allErrors[k];
+    });
+    setErrors(nextErrors);
+    
+    if (!stepHasErrors) {
+      setCurrentStep(prev => prev + 1);
+      setTouched({}); // Reset touched for the new step to keep it clean
+      setDidTryNext(false);
     }
   };
+
 
   const handlePrevStep = () => setCurrentStep(prev => prev - 1);
 
   return (
     <div className="form-section animate-fade-up animate-fade-up-2">
-      <form className="form-card" onSubmit={handleSubmit}>
+      <div className="form-card" onKeyDown={e => {
+        if (e.key === 'Enter' && currentStep === 4) handleSubmit(e);
+      }}>
 
         <div className="form-header">
           <div className="form-header-icon">⚡</div>
@@ -1165,56 +1430,160 @@ export default function PropertyForm({ onAnalyze }) {
 
           {/* ══ SECTION 1: Location ══ */}
           {currentStep === 1 && (
-            <div className="wizard-step animate-fade-up">
+            <div className="wizard-step animate-fade-up" style={{ position: 'relative', zIndex: 10 }}>
               <StepBadge n="1" label="Location Details" done={locDone} />
               <div className="form-grid">
 
                 <div className="form-field">
                   <label className="form-label" htmlFor="state">State *</label>
-                  <select id="state" className={`form-select ${errors.state ? 'input-error' : ''}`}
-                    value={form.state} onChange={e => setField('state', e.target.value)}>
-                    <option value="">— Select State —</option>
-                    {STATES.map(s => <option key={s} value={s}>{s}</option>)}
-                  </select>
+                  <SearchableSelect
+                    id="state"
+                    options={STATES}
+                    value={form.state}
+                    onChange={e => setField('state', e.target.value)}
+                    placeholder="Search state..."
+                    error={errors.state}
+                  />
                   <FieldError msg={errors.state} />
                 </div>
 
                 <div className="form-field">
                   <label className="form-label" htmlFor="city">City *</label>
-                  <select id="city" className={`form-select ${errors.city ? 'input-error' : ''}`}
-                    value={form.city} onChange={e => setField('city', e.target.value)} disabled={!form.state}>
-                    <option value="">{form.state ? '— Select City —' : '— Select State first —'}</option>
-                    {cities.map(c => <option key={c} value={c}>{c}</option>)}
-                  </select>
+                  <SearchableSelect
+                    id="city"
+                    options={cities}
+                    value={form.city}
+                    onChange={e => setField('city', e.target.value)}
+                    placeholder={form.state ? "Search city..." : "Select State first"}
+                    disabled={!form.state}
+                    error={errors.city}
+                  />
                   <FieldError msg={errors.city} />
                 </div>
 
                 <div className="form-field">
                   <label className="form-label" htmlFor="locality">Locality / Area *</label>
-                  <select id="locality" className={`form-select ${errors.locality ? 'input-error' : ''}`}
-                    value={form.locality} onChange={e => setField('locality', e.target.value)} disabled={!form.city}>
-                    <option value="">{form.city ? '— Select Locality —' : '— Select City first —'}</option>
-                    {localities.map(l => <option key={l} value={l}>{l}</option>)}
-                  </select>
+                  <SearchableSelect
+                    id="locality"
+                    options={localities}
+                    value={form.locality}
+                    onChange={e => setField('locality', e.target.value)}
+                    placeholder={form.city ? "Search locality..." : "Select City first"}
+                    disabled={!form.city}
+                    error={errors.locality}
+                  />
                   <FieldError msg={errors.locality} />
                 </div>
 
                 <div className="form-field">
                   <label className="form-label" htmlFor="localityDemand">Locality Demand Level *</label>
-                  <select id="localityDemand" className={`form-select ${errors.localityDemand ? 'input-error' : ''}`}
-                    value={form.localityDemand} onChange={e => setField('localityDemand', e.target.value)}>
-                    <option value="">— Select Demand Level —</option>
-                    {DEMAND_LEVELS.map(d => <option key={d} value={d}>{d}</option>)}
-                  </select>
+                  <SearchableSelect
+                    id="localityDemand"
+                    options={DEMAND_LEVELS}
+                    value={form.localityDemand}
+                    onChange={e => setField('localityDemand', e.target.value)}
+                    placeholder="Select demand level..."
+                    error={errors.localityDemand}
+                  />
                   <FieldError msg={errors.localityDemand} />
                 </div>
               </div>
+
+              {/* ── Refined Location Divider ── */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '16px',
+                margin: '28px 0 20px'
+              }}>
+                <div style={{ flex: 1, height: '1px', background: 'linear-gradient(to right, transparent, rgba(255,255,255,0.2), rgba(255,255,255,0.2))' }}></div>
+                <div style={{
+                  fontSize: '11px',
+                  fontWeight: 900,
+                  color: 'rgba(255,255,255,0.4)',
+                  letterSpacing: '2px',
+                  textTransform: 'uppercase',
+                  background: 'rgba(255,255,255,0.08)',
+                  padding: '4px 14px',
+                  borderRadius: '20px',
+                  border: '1px solid rgba(255,255,255,0.15)',
+                  boxShadow: '0 2px 10px rgba(0,0,0,0.2)'
+                }}>OR</div>
+                <div style={{ flex: 1, height: '1px', background: 'linear-gradient(to left, transparent, rgba(255,255,255,0.2), rgba(255,255,255,0.2))' }}></div>
+              </div>
+
+              {/* ── Premium Map Picker Button ── */}
+              <button 
+                type="button" 
+                onClick={() => setIsMapOpen(true)}
+                style={{ 
+                  width: '100%', 
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'flex-start',
+                  gap: '16px', 
+                  background: 'rgba(6, 182, 212, 0.08)', 
+                  border: '1px solid rgba(6, 182, 212, 0.2)',
+                  padding: '16px 24px',
+                  borderRadius: '20px',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  backdropFilter: 'blur(10px)',
+                  position: 'relative',
+                  overflow: 'hidden'
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.background = 'rgba(6, 182, 212, 0.15)';
+                  e.currentTarget.style.borderColor = 'rgba(6, 182, 212, 0.4)';
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 12px 30px -10px rgba(6, 182, 212, 0.5)';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.background = 'rgba(6, 182, 212, 0.08)';
+                  e.currentTarget.style.borderColor = 'rgba(6, 182, 212, 0.2)';
+                  e.currentTarget.style.transform = 'none';
+                  e.currentTarget.style.boxShadow = 'none';
+                }}
+              >
+                <div style={{ 
+                  background: 'linear-gradient(135deg, #06b6d4, #2dd4bf)', 
+                  borderRadius: '14px', 
+                  width: '40px', 
+                  height: '40px', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center', 
+                  color: 'white',
+                  boxShadow: '0 4px 15px rgba(6, 182, 212, 0.4)',
+                  position: 'relative'
+                }}>
+                  <MapPin size={20} />
+                  <div style={{
+                    position: 'absolute',
+                    inset: '-5px',
+                    border: '2px solid #06b6d4',
+                    borderRadius: '18px',
+                    opacity: 0.5,
+                    animation: 'pulse 2s infinite'
+                  }} />
+                </div>
+                <div style={{ textAlign: 'left' }}>
+                  <div style={{ fontSize: '14px', fontWeight: 600, color: 'white', letterSpacing: '0.3px' }}>Pick Location from Map</div>
+                  <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', marginTop: '2px' }}>Faster pinpointing for State, City & Locality</div>
+                </div>
+              </button>
+
+              <MapModal 
+                isOpen={isMapOpen} 
+                onClose={() => setIsMapOpen(false)} 
+                onSelectLocation={handleMapLocationSelect} 
+              />
             </div>
           )}
 
           {/* ══ SECTION 2: Property Identifier ══ */}
           {currentStep === 2 && (
-            <div className="wizard-step animate-fade-up">
+            <div className="wizard-step animate-fade-up" style={{ position: 'relative', zIndex: 10 }}>
               <StepBadge n="2" label="Property Identifier — Distinguish Your Property" done={identDone} />
               
               <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '16px', padding: '10px 14px', borderRadius: '8px', background: 'rgba(59,130,246,0.05)', border: '1px solid rgba(59,130,246,0.15)' }}>
@@ -1238,11 +1607,14 @@ export default function PropertyForm({ onAnalyze }) {
 
                 <div className="form-field">
                   <label className="form-label" htmlFor="propertyType">Property Type *</label>
-                  <select id="propertyType" className={`form-select ${errors.propertyType ? 'input-error' : ''}`}
-                    value={form.propertyType} onChange={e => setField('propertyType', e.target.value)}>
-                    <option value="">— Select Type —</option>
-                    {PROPERTY_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-                  </select>
+                  <SearchableSelect
+                    id="propertyType"
+                    options={PROPERTY_TYPES}
+                    value={form.propertyType}
+                    onChange={e => setField('propertyType', e.target.value)}
+                    placeholder="Search type..."
+                    error={errors.propertyType}
+                  />
                   <FieldError msg={errors.propertyType} />
                 </div>
 
@@ -1252,11 +1624,13 @@ export default function PropertyForm({ onAnalyze }) {
                     Facing Direction
                     <span style={{ color: 'var(--text-muted)', fontWeight: 400, marginLeft: '6px', fontSize: '11px' }}>(optional · affects price ±4%)</span>
                   </label>
-                  <select id="facing" className="form-select"
-                    value={form.facing} onChange={e => setField('facing', e.target.value)}>
-                    <option value="">— Select Facing —</option>
-                    {FACING_OPTIONS.map(f => <option key={f} value={f}>{f}</option>)}
-                  </select>
+                  <SearchableSelect
+                    id="facing"
+                    options={FACING_OPTIONS}
+                    value={form.facing}
+                    onChange={e => setField('facing', e.target.value)}
+                    placeholder="Search facing..."
+                  />
                 </div>
 
               </div>
@@ -1265,7 +1639,7 @@ export default function PropertyForm({ onAnalyze }) {
 
           {/* ══ SECTION 3: Property Specifications (type-specific) ══ */}
           {currentStep === 3 && (
-            <div className="wizard-step animate-fade-up">
+            <div className="wizard-step animate-fade-up" style={{ position: 'relative', zIndex: 10 }}>
               <StepBadge n="3" label="Property Specifications" done={propDone} />
               
               {form.propertyType && (
@@ -1282,7 +1656,7 @@ export default function PropertyForm({ onAnalyze }) {
 
           {/* ══ SECTION 4: Optional Enhancements (type-specific) ══ */}
           {currentStep === 4 && (
-            <div className="wizard-step animate-fade-up">
+            <div className="wizard-step animate-fade-up" style={{ position: 'relative', zIndex: 10 }}>
               <StepBadge n="4" label="Optional Enhancements" done={false} />
               
               {form.propertyType && (
@@ -1502,15 +1876,17 @@ export default function PropertyForm({ onAnalyze }) {
           <PropertyCardPreview form={form} />
 
           {/* Error banner */}
-          {totalErrors > 0 && (
+          {/* Error banner - only show for current step if user tried to move forward */}
+          {didTryNext && totalStepErrors > 0 && (
             <div style={{
               padding: '12px 16px', borderRadius: '10px', marginTop: '20px', marginBottom: '8px',
               background: 'rgba(244,63,94,0.06)', border: '1px solid rgba(244,63,94,0.3)',
               fontSize: '13px', color: '#fb7185',
             }}>
-              ⚠ {totalErrors} field{totalErrors > 1 ? 's need' : ' needs'} attention before continuing.
+              ⚠ {totalStepErrors} field{totalStepErrors > 1 ? 's in this step need' : ' in this step needs'} attention before continuing.
             </div>
           )}
+
 
           {/* Actions */}
           <div className="form-actions" style={{ marginTop: '30px', borderTop: '1px solid var(--clr-border)', paddingTop: '24px', justifyContent: 'space-between' }}>
@@ -1525,18 +1901,24 @@ export default function PropertyForm({ onAnalyze }) {
             )}
 
             {currentStep < 4 ? (
-              <button type="button" className="btn-primary" onClick={handleNextStep}>
+              <button type="button" className="btn-primary" onClick={handleNextStep} disabled={lockButtons}>
                 Next Step →
               </button>
             ) : (
-              <button type="submit" className="btn-primary" id="analyze-btn" style={{ opacity: totalErrors > 0 ? 0.55 : 1 }}>
+              <button type="button" className="btn-primary" id="analyze-btn" 
+                onClick={handleSubmit}
+                disabled={lockButtons}
+                style={{ 
+                  opacity: lockButtons ? 0.6 : 1,
+                  cursor: lockButtons ? 'not-allowed' : 'pointer'
+                }}>
                 <span>🧠</span> Run Intelligence Engine
               </button>
             )}
           </div>
 
         </div>
-      </form>
+      </div>
     </div>
   );
 }

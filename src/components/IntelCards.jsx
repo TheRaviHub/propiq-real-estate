@@ -31,7 +31,7 @@ export default function IntelCards({ result }) {
         sub={`Range: ${formatINR(priceMin)} – ${formatINR(priceMax)}`}
         trend="Fair value"
         trendDir="up"
-        glowColor="var(--clr-primary)"
+        glowColor="rgba(56, 189, 248, 0.4)"
       />
       <IntelCard
         label="ML Confidence Score"
@@ -39,7 +39,7 @@ export default function IntelCards({ result }) {
         sub="Model certainty"
         trend={confidenceScore > 75 ? 'High confidence' : confidenceScore > 55 ? 'Moderate' : 'Low'}
         trendDir={confidenceScore > 75 ? 'up' : confidenceScore > 55 ? 'neutral' : 'down'}
-        glowColor="#8b5cf6"
+        glowColor="rgba(167, 139, 250, 0.4)"
       />
       <IntelCard
         label="Market Demand Score"
@@ -47,7 +47,7 @@ export default function IntelCards({ result }) {
         sub="Buyer interest signal"
         trend={demandScore > 70 ? 'Hot market' : demandScore > 45 ? 'Active' : 'Slow'}
         trendDir={demandDir}
-        glowColor="var(--clr-accent-cyan)"
+        glowColor="rgba(34, 211, 238, 0.4)"
       />
       <IntelCard
         label="Comparable Sales"
@@ -55,7 +55,7 @@ export default function IntelCards({ result }) {
         sub="Recent transactions nearby"
         trend="In last 90 days"
         trendDir="neutral"
-        glowColor="#f97316"
+        glowColor="rgba(249, 115, 22, 0.4)"
       />
     </div>
   );
