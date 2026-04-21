@@ -12,31 +12,40 @@ const months = ['Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'];
 
 function SectionTitle({ icon, title, subtitle, color = '#60a5fa' }) {
   return (
-    <div style={{ marginBottom: '20px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
-        <div style={{
-          width: 32, height: 32, borderRadius: '8px', display: 'flex', alignItems: 'center',
-          justifyContent: 'center', fontSize: '16px',
-          background: `${color}18`, border: `1px solid ${color}30`,
-        }}>{icon}</div>
-        <span style={{ fontFamily: 'var(--font-display)', fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }}>
+    <div style={{ marginBottom: '24px', display: 'flex', gap: '16px' }}>
+      <div style={{
+        flexShrink: 0, width: 42, height: 42, borderRadius: '12px', display: 'flex', alignItems: 'center',
+        justifyContent: 'center', fontSize: '20px', position: 'relative', zIndex: 1,
+        background: `${color}18`, border: `1px solid ${color}30`,
+      }}>{icon}</div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', position: 'relative', zIndex: 1 }}>
+        <h4 style={{ fontFamily: 'var(--font-display)', fontSize: '18px', fontWeight: 800, color: '#fff', margin: 0, lineHeight: 1.2 }}>
           {title}
-        </span>
+        </h4>
+        {subtitle && <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: 0, fontWeight: 500 }}>{subtitle}</p>}
       </div>
-      {subtitle && <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginLeft: '42px' }}>{subtitle}</p>}
     </div>
   );
 }
 
-function StatBadge({ label, value, color = '#60a5fa', sub }) {
+function StatBadge({ label, value, color = '#60a5fa', sub, gradient }) {
   return (
-    <div style={{
-      padding: '16px 20px', borderRadius: '14px',
-      background: 'rgba(5,11,24,0.5)', border: '1px solid rgba(255,255,255,0.06)',
-    }}>
-      <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.7px', marginBottom: '6px' }}>{label}</div>
-      <div style={{ fontFamily: 'var(--font-display)', fontSize: '22px', fontWeight: 800, color, lineHeight: 1 }}>{value}</div>
-      {sub && <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>{sub}</div>}
+    <div className="aurora-card" style={{ padding: '24px' }}>
+      <div className="aurora-blob" style={{ background: color, top: '-40%', left: '-40%', opacity: 0.2 }} />
+      <div style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '12px', position: 'relative', zIndex: 1 }}>{label}</div>
+      <div style={{ 
+        fontFamily: 'var(--font-display)', 
+        fontSize: '32px', 
+        fontWeight: 900, 
+        background: gradient || `linear-gradient(135deg, #fff, ${color})`,
+        WebkitBackgroundClip: 'text',
+        WebkitTextFillColor: 'transparent',
+        lineHeight: 1.1, 
+        position: 'relative',
+        zIndex: 1,
+        letterSpacing: '-0.5px'
+      }}>{value}</div>
+      {sub && <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '8px', fontWeight: 600, position: 'relative', zIndex: 1 }}>{sub}</div>}
     </div>
   );
 }
@@ -90,28 +99,29 @@ function BuyerMonitoring({ result }) {
   return (
     <div className="animate-fade-up">
       {/* Deal Confidence Summary */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '12px', marginBottom: '28px' }}>
-        <StatBadge label="ML Fair Value Accuracy" value={`${confidenceScore}%`} color="#38bdf8" sub="Local transaction data" />
-        <StatBadge label="Overpricing Detected" value={`+${gap}%`} color={gap > 10 ? '#fb7185' : '#34d399'} sub="vs ML fair value" />
-        <StatBadge label="Avg Negotiation Success" value="74%" color="#34d399" sub="In this locality" />
-        <StatBadge label="Market Momentum" value={demandScore > 70 ? 'High' : 'Stable'} color={demandScore > 70 ? '#10b981' : '#f97316'} sub={`Score: ${demandScore}/100`} />
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '16px', marginBottom: '32px' }}>
+        <StatBadge label="ML Fair Value Accuracy" value={`${confidenceScore}%`} color="var(--clr-aurora-4)" gradient="linear-gradient(135deg, #38bdf8, #818cf8)" sub="Local transaction data" />
+        <StatBadge label="Overpricing Detected" value={`+${gap}%`} color={gap > 10 ? '#fb7185' : '#10b981'} gradient={gap > 10 ? 'linear-gradient(135deg, #fb7185, #ec4899)' : 'linear-gradient(135deg, #34d399, #059669)'} sub="vs ML fair value" />
+        <StatBadge label="Avg Negotiation Success" value="74%" color="var(--clr-aurora-5)" gradient="linear-gradient(135deg, #10b981, #34d399)" sub="In this locality" />
+        <StatBadge label="Market Momentum" value={demandScore > 70 ? 'High' : 'Stable'} color={demandScore > 70 ? '#10b981' : '#f97316'} gradient={demandScore > 70 ? 'linear-gradient(135deg, #10b981, #3b82f6)' : 'linear-gradient(135deg, #f97316, #fbbf24)'} sub={`Score: ${demandScore}/100`} />
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: '20px', marginBottom: '24px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: '24px', marginBottom: '24px' }}>
         {/* ML Fair Value vs Market Rate Trend */}
-        <div className="panel">
+        <div className="aurora-card" style={{ padding: '24px' }}>
+          <div className="aurora-blob" style={{ background: '#3b82f6', top: '-30%', right: '-30%', opacity: 0.1 }} />
           <SectionTitle icon="📉" title="Fair Value vs Market Rate (6 months)" color="#3b82f6"
             subtitle="Tracking price divergence from fundamental fair value" />
-          <div style={{ height: 220 }}>
+          <div style={{ height: 220, position: 'relative', zIndex: 1 }}>
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={fairnessTrend} margin={{ top: 4, right: 8, left: 0, bottom: 4 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                <XAxis dataKey="month" tick={{ fill: '#64748b', fontSize: 11 }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fill: '#64748b', fontSize: 10 }} axisLine={false} tickLine={false}
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" />
+                <XAxis dataKey="month" tick={{ fill: '#64748b', fontSize: 11, fontWeight: 600 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: '#64748b', fontSize: 10, fontWeight: 600 }} axisLine={false} tickLine={false}
                   tickFormatter={v => `₹${(v/1e5).toFixed(1)}L`} />
-                <Tooltip contentStyle={{ background: 'rgba(10,22,40,0.95)', border: '1px solid rgba(59,130,246,0.3)', borderRadius: '10px' }}
-                  labelStyle={{ color: '#f0f6ff' }} />
-                <Line type="monotone" name="ML Fair Value" dataKey="mlValue" stroke="#38bdf8" strokeWidth={3} dot={{ r: 4, fill: '#38bdf8', strokeWidth: 0 }} />
+                <Tooltip contentStyle={{ background: 'rgba(10,22,40,0.95)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px' }}
+                  labelStyle={{ color: '#f0f6ff', fontWeight: 700 }} />
+                <Line type="monotone" name="ML Fair Value" dataKey="mlValue" stroke="#38bdf8" strokeWidth={4} dot={{ r: 4, fill: '#38bdf8', strokeWidth: 0 }} />
                 <Line type="monotone" name="Market Rate" dataKey="marketRate" stroke="#fb7185" strokeWidth={2} strokeDasharray="6 4" dot={{ r: 3, fill: '#fb7185', strokeWidth: 0 }} />
               </LineChart>
             </ResponsiveContainer>
@@ -119,21 +129,23 @@ function BuyerMonitoring({ result }) {
         </div>
 
         {/* Buyer Negotiation Feedback */}
-        <div className="panel">
+        <div className="aurora-card" style={{ padding: '24px' }}>
+          <div className="aurora-blob" style={{ background: '#34d399', top: '-30%', right: '-30%', opacity: 0.1 }} />
           <SectionTitle icon="💬" title="Negotiation Insights" color="#34d399"
             subtitle="Based on recent similar deal closures" />
-          <FeedbackRating label="Buyers successful in negotiation" value={74} color="#34d399" />
-          <FeedbackRating label="Average discount secured" value={62} color="#60a5fa" />
-          <FeedbackRating label="Deals closed below ML fair value" value={38} color="#a78bfa" />
-          <div style={{ marginTop: '16px', padding: '12px', borderRadius: '10px', background: 'rgba(59,130,246,0.06)', border: '1px solid rgba(59,130,246,0.2)' }}>
-            <div style={{ fontSize: '12px', color: '#60a5fa', fontWeight: 600, marginBottom: '4px' }}>💡 AI Strategy</div>
-            <div style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-              For a <strong>{inputs.propertyType} in {inputs.locality}</strong>, 68% of buyers who started at ML fair value reached a deal within {liquidityDays} days.
+          <div style={{ position: 'relative', zIndex: 1, paddingLeft: '58px' }}>
+            <FeedbackRating label="Buyers successful in negotiation" value={74} color="#34d399" />
+            <FeedbackRating label="Average discount secured" value={62} color="#60a5fa" />
+            <FeedbackRating label="Deals closed below ML fair value" value={38} color="#a78bfa" />
+            <div style={{ marginTop: '20px', padding: '16px', borderRadius: '16px', background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.15)' }}>
+              <div style={{ fontSize: '12px', color: '#60a5fa', fontWeight: 800, marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '1px' }}>💡 AI Strategy</div>
+              <div style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.6, fontWeight: 500 }}>
+                For a <strong style={{ color: 'var(--text-primary)' }}>{inputs.propertyType} in {inputs.locality}</strong>, 68% of buyers who started at ML fair value reached a deal within {liquidityDays} days.
+              </div>
             </div>
           </div>
         </div>
       </div>
-
     </div>
   );
 }

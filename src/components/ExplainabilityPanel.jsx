@@ -29,14 +29,36 @@ function CustomTooltip({ active, payload }) {
     const d = payload[0].payload;
     const meta = FEATURE_META[d.name] || { icon: <Zap size={14} />, desc: '' };
     return (
-      <div className="glass-bright p-3 rounded-xl border border-white/10 shadow-2xl">
-        <div className="flex items-center gap-2 mb-1">
-          <span className="text-primary-light">{meta.icon}</span>
-          <span className="font-bold text-white">{d.name}</span>
+      <div style={{
+        background: 'rgba(15, 23, 42, 0.65)',
+        backdropFilter: 'blur(16px) saturate(180%)',
+        padding: '20px',
+        borderRadius: '20px',
+        border: '1px solid rgba(255, 255, 255, 0.18)',
+        boxShadow: '0 25px 60px -12px rgba(0, 0, 0, 0.6)',
+        minWidth: '240px',
+        borderTop: '1px solid rgba(255, 255, 255, 0.3)', // Specular highlight
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+          <span style={{ color: '#818cf8', filter: 'drop-shadow(0 0 4px rgba(129,140,248,0.4))' }}>{meta.icon}</span>
+          <span style={{ fontWeight: '900', color: '#fff', fontSize: '15px', textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>{d.name}</span>
         </div>
-        <div className="text-xs text-slate-400 mb-2">{meta.desc}</div>
-        <div className={`text-sm font-bold flex items-center gap-1 ${d.positive ? 'text-emerald-400' : 'text-rose-400'}`}>
-          {d.positive ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
+        <div style={{ fontSize: '12px', color: '#cbd5e1', marginBottom: '12px', lineHeight: '1.4', fontWeight: '500' }}>{meta.desc}</div>
+        <div style={{ 
+          fontSize: '14px', 
+          fontWeight: '900', 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: '6px', 
+          color: d.positive ? '#10b981' : '#fb7185',
+          padding: '10px 14px',
+          background: d.positive ? 'rgba(16, 185, 129, 0.15)' : 'rgba(244, 63, 94, 0.15)',
+          borderRadius: '12px',
+          border: `1px solid ${d.positive ? 'rgba(16, 185, 129, 0.3)' : 'rgba(244, 63, 94, 0.3)'}`,
+          boxShadow: `0 4px 12px ${d.positive ? 'rgba(16, 185, 129, 0.1)' : 'rgba(244, 63, 94, 0.1)'}`,
+          textShadow: '0 1px 2px rgba(0,0,0,0.3)'
+        }}>
+          {d.positive ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
           {d.positive ? 'Price Boost: ' : 'Price Adjustment: '}{d.value}%
         </div>
       </div>

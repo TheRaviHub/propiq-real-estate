@@ -142,13 +142,13 @@ export default function TCOCalculator({ result }) {
       {/* Sliders */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '24px' }}>
         <div>
-          <SliderRow id="sl-loan"     label="Loan Amount (% of property)" value={loanPct}     min={0}   max={90}  step={5}    id="sl-loan"     onChange={setLoanPct}     format={v => `${v}%`}        color="#3b82f6" />
-          <SliderRow id="sl-rate"     label="Home Loan Interest Rate"      value={interestRate} min={7.5} max={12}  step={0.05} id="sl-rate"     onChange={setInterestRate} format={v => `${v.toFixed(2)}%`} color="#8b5cf6" />
-          <SliderRow id="sl-tenure"   label="Loan Tenure"                  value={tenure}      min={5}   max={30}  step={1}    id="sl-tenure"   onChange={setTenure}      format={v => `${v} yrs`}     color="#60a5fa" />
+          <SliderRow id="sl-loan"     label="Loan Amount (% of property)" value={loanPct}     min={0}   max={90}  step={5}    onChange={setLoanPct}     format={v => `${v}%`}        color="#3b82f6" />
+          <SliderRow id="sl-rate"     label="Home Loan Interest Rate"      value={interestRate} min={7.5} max={12}  step={0.05} onChange={setInterestRate} format={v => `${v.toFixed(2)}%`} color="#8b5cf6" />
+          <SliderRow id="sl-tenure"   label="Loan Tenure"                  value={tenure}      min={5}   max={30}  step={1}    onChange={setTenure}      format={v => `${v} yrs`}     color="#60a5fa" />
         </div>
         <div>
-          <SliderRow id="sl-broker"   label="Brokerage / Agent Fee"        value={brokeragePct} min={0} max={3}   step={0.5}  id="sl-broker"   onChange={setBrokeragePct} format={v => `${v}%`}        color="#fbbf24" />
-          <SliderRow id="sl-maint"    label="Monthly Maintenance"          value={maintenance}  min={0} max={Math.round(monthlyRent * 0.3)} step={500}  id="sl-maint"    onChange={setMaintenance}  format={v => `₹${v.toLocaleString()}`} color="#34d399" />
+          <SliderRow id="sl-broker"   label="Brokerage / Agent Fee"        value={brokeragePct} min={0} max={3}   step={0.5}  onChange={setBrokeragePct} format={v => `${v}%`}        color="#fbbf24" />
+          <SliderRow id="sl-maint"    label="Monthly Maintenance"          value={maintenance}  min={0} max={Math.round(monthlyRent * 0.3)} step={500}  onChange={setMaintenance}  format={v => `₹${v.toLocaleString()}`} color="#34d399" />
         </div>
       </div>
 

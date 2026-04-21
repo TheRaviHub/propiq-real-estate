@@ -33,7 +33,9 @@ export default function LoadingAnalysis({ onComplete }) {
 
   return (
     <div className="loading-overlay">
-      <div className="loading-card" style={{ animation: 'fadeIn 0.3s ease both' }}>
+      {/* Keep the bg-mesh visible during loading for visual consistency */}
+      <div className="bg-mesh" style={{ position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none' }} />
+      <div className="loading-card" style={{ animation: 'fadeIn 0.3s ease both', position: 'relative', zIndex: 1 }}>
         <div className="loading-spinner" />
         <div style={{ fontFamily: 'var(--font-display)', fontSize: '20px', fontWeight: 700, marginBottom: '8px' }}>
           Running Intelligence Engine

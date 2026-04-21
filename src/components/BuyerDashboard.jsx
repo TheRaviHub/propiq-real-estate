@@ -126,8 +126,20 @@ export default function BuyerDashboard({ result }) {
             <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
               {verdictSub}
             </div>
-         </div>
-      </div>
+          </div>
+       </div>
+
+      <h2 className="glass-text" style={{ 
+        fontSize: '32px', 
+        fontWeight: 800, 
+        marginTop: '24px',
+        marginBottom: '8px',
+        background: 'linear-gradient(to bottom, #fff 30%, rgba(255,255,255,0.7) 100%)',
+        WebkitBackgroundClip: 'text',
+        WebkitTextFillColor: 'transparent'
+      }}>
+        Market Fair Value
+      </h2>
 
       {/* 2. THE THREE NUMBERS — Tighter padding */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '16px' }}>

@@ -8,14 +8,17 @@ export default function SearchableSelect({ id, options, value, onChange, placeho
 
   useEffect(() => {
     // When value changes externally (e.g. state reset), update search term if not open
-    if (!isOpen) setSearchTerm(value || '');
+    // We check against null/undefined/empty string specifically so '0' works correctly
+    if (!isOpen) {
+      setSearchTerm(value !== undefined && value !== null && value !== '' ? String(value) : '');
+    }
   }, [value, isOpen]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (containerRef.current && !containerRef.current.contains(event.target)) {
         setIsOpen(false);
-        setSearchTerm(value || ''); // Reset back to selected value if user didn't click an option
+        setSearchTerm(value !== undefined && value !== null && value !== '' ? String(value) : '');
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -62,8 +65,8 @@ export default function SearchableSelect({ id, options, value, onChange, placeho
           id={id}
           type="text"
           className={`form-input ${error ? 'input-error' : ''}`}
-          placeholder={isOpen ? placeholder : (value || placeholder)}
-          value={isOpen ? searchTerm : (value || '')}
+          placeholder={isOpen ? placeholder : (value !== undefined && value !== null && value !== '' ? String(value) : placeholder)}
+          value={isOpen ? searchTerm : (value !== undefined && value !== null && value !== '' ? String(value) : '')}
           onChange={handleInputChange}
           onFocus={handleInputFocus}
           disabled={disabled}
@@ -87,40 +90,39 @@ export default function SearchableSelect({ id, options, value, onChange, placeho
       </div>
 
       {isOpen && !disabled && (
-        <div className="glass dropdown-menu" style={{
+        <div className="dropdown-menu-container" style={{
           position: 'absolute',
-          top: 'calc(100% + 8px)',
+          top: 'calc(100% + 12px)',
           left: 0,
           right: 0,
-          maxHeight: '260px',
-          overflowY: 'auto',
           zIndex: 10000,
-          padding: '8px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '4px',
-          borderRadius: '16px'
         }}>
-          {filteredOptions.length > 0 ? (
-            filteredOptions.map((opt, i) => {
-              const isObj = typeof opt === 'object' && opt !== null;
-              const label = isObj ? opt.label : opt;
-              const val   = isObj ? opt.value : opt;
-              return (
-                <div
-                  key={i}
-                  className={`dropdown-option ${String(value) === String(val) ? 'selected' : ''}`}
-                  onClick={() => handleSelect(val)}
-                >
-                  {label}
-                </div>
-              );
-            })
-          ) : (
-            <div style={{ padding: '10px 12px', color: 'var(--text-muted)', fontSize: '13px', textAlign: 'center' }}>
-              No matches found
-            </div>
-          )}
+          {/* The Blur Layer — Heavy frosted glass that obscures everything behind it */}
+          <div className="glass dropdown-blur-layer" />
+          
+          {/* The Content Layer — Scrollable and sharp */}
+          <div className="dropdown-content-layer">
+            {filteredOptions.length > 0 ? (
+              filteredOptions.map((opt, i) => {
+                const isObj = typeof opt === 'object' && opt !== null;
+                const label = isObj ? opt.label : opt;
+                const val   = isObj ? opt.value : opt;
+                return (
+                  <div
+                    key={i}
+                    className={`dropdown-option ${String(value) === String(val) ? 'selected' : ''}`}
+                    onClick={() => handleSelect(val)}
+                  >
+                    {label}
+                  </div>
+                );
+              })
+            ) : (
+              <div style={{ padding: '12px', color: 'var(--text-muted)', fontSize: '13px', textAlign: 'center', fontWeight: 'bold' }}>
+                No matches found
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>

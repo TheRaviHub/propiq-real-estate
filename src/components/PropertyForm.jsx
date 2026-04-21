@@ -1,8 +1,6 @@
 // src/components/PropertyForm.jsx
 import { useState, useEffect } from 'react';
-import { MapPin, Navigation } from 'lucide-react';
 import SearchableSelect from './SearchableSelect';
-import MapModal from './MapModal';
 
 // ── Data ──────────────────────────────────────────────────────────────────────
 const STATE_CITIES = {
@@ -174,7 +172,10 @@ const CITY_LOCALITIES = {
   Other: ['Other'],
 };
 
-const STATES            = Object.keys(STATE_CITIES).sort();
+const STATES = Object.keys(STATE_CITIES)
+  .filter(s => s !== 'Other')
+  .sort()
+  .concat('Other');
 const DEMAND_LEVELS     = ['Premium', 'High', 'Medium', 'Low', 'Emerging'];
 const PROPERTY_TYPES    = ['Apartment', 'Villa', 'Row House', 'Builder Floor', 'Penthouse', 'Studio', 'Plot / Land'];
 
@@ -287,47 +288,7 @@ function StepBadge({ n, label, done }) {
   );
 }
 
-// Live Property Card Preview
-function PropertyCardPreview({ form }) {
-  const ready = form.locality && form.city && form.propertyType;
-  if (!ready) return null;
-  const facingEmoji = { North: '⬆', 'North-East': '↗', East: '➡', 'South-East': '↘', South: '⬇', 'South-West': '↙', West: '⬅', 'North-West': '↖' };
-  return (
-    <div className="glass" style={{
-      marginTop: '24px', padding: '20px', borderRadius: '16px',
-      border: '1px solid rgba(255, 255, 255, 0.15)',
-      background: 'linear-gradient(135deg, rgba(79, 70, 229, 0.12), rgba(124, 58, 237, 0.08))',
-      boxShadow: '0 10px 30px rgba(0, 0, 0, 0.2)',
-    }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-        <span style={{ fontSize: '11px', fontWeight: 700, color: '#60a5fa', textTransform: 'uppercase', letterSpacing: '1px' }}>
-          🏠 Property Being Analysed
-        </span>
-      </div>
-      <div style={{ fontFamily: 'var(--font-display)', fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '4px' }}>
-        {form.societyName || `${form.propertyType} in ${form.locality}`}
-      </div>
-      <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '10px' }}>
-        {[form.locality, form.city, form.state].filter(Boolean).join(', ')}
-      </div>
-      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-        {form.propertyType && <span className="info-chip">{form.propertyType}</span>}
-        {form.bhk && <span className="info-chip">{form.bhk} BHK</span>}
-        {form.propertyType !== 'Plot / Land' && form.area && <span className="info-chip">{Number(form.area).toLocaleString()} sqft built-up</span>}
-        {form.propertyType === 'Plot / Land' && form.plotArea && <span className="info-chip">🌍 {Number(form.plotArea).toLocaleString()} sqft plot</span>}
-        {form.propertyType === 'Plot / Land' && form.zoneClassification && <span className="info-chip">{form.zoneClassification}</span>}
-        {form.propertyType === 'Plot / Land' && form.legalStatus && <span className="info-chip">{form.legalStatus}</span>}
-        {form.floor && form.totalFloors && <span className="info-chip">Floor {form.floor}/{form.totalFloors}</span>}
-        {form.facing && <span className="info-chip">{facingEmoji[form.facing] || ''} {form.facing}</span>}
-        {form.gatedSociety === true && <span className="info-chip">🔒 Gated</span>}
-        {form.liftAvailable === true && <span className="info-chip">🛗 Lift</span>}
-        {form.parking === true && <span className="info-chip">🅿 Parking</span>}
-        {form.cornerUnit && <span className="info-chip">📐 Corner Plot</span>}
-        {form.carpetArea && form.propertyType !== 'Plot / Land' && <span className="info-chip">Carpet: {Number(form.carpetArea).toLocaleString()} sqft</span>}
-      </div>
-    </div>
-  );
-}
+
 
 // ── TypeSpecFields: Type-aware property specification renderer ───────────────
 function TypeSpecFields({ form, errors, setField }) {
@@ -1071,6 +1032,47 @@ function TypeSpecFields({ form, errors, setField }) {
   );
 }
 
+// ── Property Card Preview — Re-enabled and Fixed ───────────────────────────────
+function PropertyCardPreview({ form }) {
+  const chips = [
+    form.propertyType && { label: form.propertyType, icon: '🏠' },
+    form.bhk          && { label: `${form.bhk} BHK`, icon: '🛏' },
+    form.area         && { label: `${Number(form.area).toLocaleString()} sqft`, icon: '📐' },
+    form.city         && { label: form.city, icon: '🏙️' },
+    form.locality     && { label: form.locality, icon: '📍' },
+    form.furnished    && { label: form.furnished, icon: '🛋' },
+  ].filter(Boolean);
+
+  if (!form.propertyType && !form.city) return null;
+
+  return (
+    <div style={{
+      padding: '24px', borderRadius: '20px', marginBottom: '24px',
+      background: 'rgba(255,255,255,0.03)',
+      backdropFilter: 'blur(10px)',
+      border: '1px solid rgba(255,255,255,0.08)',
+      animation: 'animate-fade-up 0.5s ease-out'
+    }}>
+      <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px', fontWeight: 800 }}>
+        ✨ Live Configuration Preview
+      </div>
+      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+        {chips.map((chip, i) => (
+          <span key={i} style={{
+            display: 'inline-flex', alignItems: 'center', gap: '6px',
+            padding: '6px 14px', borderRadius: '999px', fontSize: '13px', fontWeight: 600,
+            background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
+            color: '#fff',
+          }}>
+            {chip.icon && <span>{chip.icon}</span>}
+            {chip.label}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ── Validator ─────────────────────────────────────────────────────────────────
 function validate(f) {
   const e = {};
@@ -1185,43 +1187,8 @@ export default function PropertyForm({ onAnalyze }) {
   const [touched, setTouched] = useState({});
   const [didTryNext, setDidTryNext] = useState(false);
   const [lockButtons, setLockButtons] = useState(false);
-  const [isMapOpen, setIsMapOpen] = useState(false);
 
-  const handleMapLocationSelect = (address) => {
-    const detectedState = address.state;
-    const detectedCity = address.city || address.town || address.village || address.district || address.county;
-    const detectedLocality = address.suburb || address.neighbourhood || address.road || address.hamlet || address.village;
 
-    // Find closest state match
-    const stateMatch = STATES.find(s => 
-      detectedState && (s.toLowerCase().includes(detectedState.toLowerCase()) || detectedState.toLowerCase().includes(s.toLowerCase()))
-    );
-
-    if (stateMatch) {
-      setField('state', stateMatch);
-      const stateCitiesList = STATE_CITIES[stateMatch] || [];
-      const cityMatch = stateCitiesList.find(c => 
-        detectedCity && (c.toLowerCase().includes(detectedCity.toLowerCase()) || detectedCity.toLowerCase().includes(c.toLowerCase()))
-      );
-
-      if (cityMatch) {
-        setField('city', cityMatch);
-        const cityLocalitiesList = CITY_LOCALITIES[cityMatch] || [];
-        const locMatch = cityLocalitiesList.find(l => 
-          detectedLocality && (l.toLowerCase().includes(detectedLocality.toLowerCase()) || detectedLocality.toLowerCase().includes(l.toLowerCase()))
-        );
-        if (locMatch) setField('locality', locMatch);
-        else if (detectedLocality) setField('locality', detectedLocality);
-      } else if (detectedCity) {
-        setField('city', detectedCity);
-        if (detectedLocality) setField('locality', detectedLocality);
-      }
-    } else {
-      if (detectedState) setField('state', detectedState);
-      if (detectedCity) setField('city', detectedCity);
-      if (detectedLocality) setField('locality', detectedLocality);
-    }
-  };
 
   // Prevent double-click skipping from Step 3 -> 4 -> Analyze
   useEffect(() => {
@@ -1240,63 +1207,83 @@ export default function PropertyForm({ onAnalyze }) {
 
 
   const citiesRaw  = form.state ? (STATE_CITIES[form.state] || []) : [];
-  const cities     = [...new Set([...citiesRaw, form.city].filter(Boolean))];
+  const cities     = [...new Set([...citiesRaw, form.city].filter(Boolean))]
+    .filter(c => c !== 'Other')
+    .sort()
+    .concat('Other');
 
   const localitiesRaw = form.city ? (CITY_LOCALITIES[form.city] || ['Other']) : [];
-  const localities = [...new Set([...localitiesRaw, form.locality].filter(Boolean))];
+  const localities = [...new Set([...localitiesRaw, form.locality].filter(Boolean))]
+    .filter(l => l !== 'Other')
+    .sort()
+    .concat('Other');
 
   function setField(key, val) {
+    setFields({ [key]: val });
+  }
+
+  function setFields(updates) {
     let nextFormState;
     setForm(prev => {
-      const next = { ...prev, [key]: val };
-      if (key === 'state') { next.city = ''; next.locality = ''; }
-      if (key === 'city')  { next.locality = ''; }
-      if (key === 'totalFloors' && next.floor !== '' && Number(next.floor) > Number(val))
-        next.floor = val;
-      // Reset bathrooms if BHK changes and bathrooms now exceeds type-adjusted max
-      if (key === 'bhk' && next.bathrooms !== '') {
-        const cap = maxBath(next.propertyType, Number(val));
-        if (Number(next.bathrooms) > cap) next.bathrooms = '';
-      }
-      if (key === 'propertyType') {
-        Object.assign(next, {
-          bhk: '', bathrooms: '', balconies: '', area: '', carpetArea: '', age: '',
-          floor: '', totalFloors: '', furnished: '', plotArea: '', villaFloors: '2',
-          privateGarden: null, privatePool: null, terraceArea: '', privateLift: null,
-          doubleCeiling: null, smartHome: null, independentEntry: null, terraceAccess: null,
-          basementAccess: null, kitchenType: '', managedApartment: null, loftMezzanine: null,
-          servantRooms: '0', parkingSpots: '', zoneClassification: '', legalStatus: '',
-          roadType: '', roadFrontageWidth: '', plotShape: '', waterAvailable: null,
-          electricityAvailable: null, sewerAvailable: null, parking: null,
-          gatedSociety: null, cornerUnit: false, liftAvailable: null, amenities: []
-        });
-      }
+      let next = { ...prev, ...updates };
+      
+      // Cascading logic
+      Object.keys(updates).forEach(key => {
+        const val = updates[key];
+        if (key === 'state') { next.city = ''; next.locality = ''; }
+        if (key === 'city')  { next.locality = ''; }
+        if (key === 'totalFloors' && next.floor !== '' && Number(next.floor) > Number(val))
+          next.floor = val;
+        
+        if (key === 'bhk' && next.bathrooms !== '') {
+          const cap = maxBath(next.propertyType, Number(val));
+          if (Number(next.bathrooms) > cap) next.bathrooms = '';
+        }
+        
+        if (key === 'propertyType') {
+          Object.assign(next, {
+            bhk: '', bathrooms: '', balconies: '', area: '', carpetArea: '', age: '',
+            floor: '', totalFloors: '', furnished: '', plotArea: '', villaFloors: '2',
+            privateGarden: null, privatePool: null, terraceArea: '', privateLift: null,
+            doubleCeiling: null, smartHome: null, independentEntry: null, terraceAccess: null,
+            basementAccess: null, kitchenType: '', managedApartment: null, loftMezzanine: null,
+            servantRooms: '0', parkingSpots: '', zoneClassification: '', legalStatus: '',
+            roadType: '', roadFrontageWidth: '', plotShape: '', waterAvailable: null,
+            electricityAvailable: null, sewerAvailable: null, parking: null,
+            gatedSociety: null, cornerUnit: false, liftAvailable: null, amenities: []
+          });
+        }
+      });
+
       nextFormState = next;
       return next;
     });
 
-    let nextTouchedState;
     setTouched(t => {
-      let nextT = { ...t, [key]: true };
-      if (key === 'propertyType') {
-        const keysToClear = ['bhk', 'bathrooms', 'balconies', 'area', 'carpetArea', 'age', 'floor', 'totalFloors', 'furnished', 'plotArea', 'villaFloors', 'terraceArea', 'kitchenType', 'servantRooms', 'parkingSpots', 'zoneClassification', 'legalStatus', 'roadType', 'roadFrontageWidth'];
-        keysToClear.forEach(k => delete nextT[k]);
-      }
-      nextTouchedState = nextT;
+      let nextT = { ...t };
+      Object.keys(updates).forEach(key => {
+        nextT[key] = true;
+        if (key === 'propertyType') {
+          const keysToClear = ['bhk', 'bathrooms', 'balconies', 'area', 'carpetArea', 'age', 'floor', 'totalFloors', 'furnished', 'plotArea', 'villaFloors', 'terraceArea', 'kitchenType', 'servantRooms', 'parkingSpots', 'zoneClassification', 'legalStatus', 'roadType', 'roadFrontageWidth'];
+          keysToClear.forEach(k => delete nextT[k]);
+        }
+      });
       return nextT;
     });
 
-    setErrors(prev => {
-      const all = validate(nextFormState || { ...form, [key]: val });
+    // Use functional update to ensure we have the correct touched state
+    setErrors(() => {
+      // Since form update is async, we use the nextFormState we captured
+      // Or fallback to current form + updates if nextFormState isn't ready (it should be since it's same tick)
+      const all = validate(nextFormState || { ...form, ...updates });
       const out = {};
-      const currentTouched = nextTouchedState || touched;
       
-      // Only show errors for fields in current or previous steps that are touched
       const relevantFields = [];
       for(let i=1; i<=currentStep; i++) relevantFields.push(...STEP_FIELDS[i]);
       
       Object.keys(all).forEach(k => { 
-        if ((currentTouched[k] || k === key) && relevantFields.includes(k)) {
+        // Show error if field is in relevant steps AND (it was just updated OR it was already touched)
+        if (relevantFields.includes(k) && (updates[k] !== undefined || touched[k])) {
           out[k] = all[k]; 
         }
       });
@@ -1315,27 +1302,49 @@ export default function PropertyForm({ onAnalyze }) {
       handleNextStep();
       return;
     }
-    setTouched(Object.keys(DEFAULT_FORM).reduce((o, k) => ({ ...o, [k]: true }), {}));
+    // Mark all fields as touched for final validation
+    const allFields = Object.keys(DEFAULT_FORM);
+    const fullTouched = {};
+    allFields.forEach(k => fullTouched[k] = true);
+    setTouched(fullTouched);
+    
     const errs = validate(form);
     setErrors(errs);
-    setDidTryNext(true); // Enable error banners on submission attempt
-    
+    setDidTryNext(true);
+
     if (Object.keys(errs).length > 0) {
+      console.warn("PropIQ: Validation failed before analysis:", errs);
+      
+      // Only jump if there's an error in a step OTHER than the current one,
+      // or if we need to focus the first error.
       for (let i = 1; i <= 4; i++) {
         const stepFields = STEP_FIELDS[i] || [];
         if (stepFields.some(k => errs[k])) {
-          if (currentStep !== i) setCurrentStep(i);
-          return;
+          if (currentStep !== i) {
+            console.log(`PropIQ: Jupming to Step ${i} to fix errors`);
+            setCurrentStep(i);
+          }
+          return; // Stop here, user needs to fix errors
         }
       }
       return;
     }
+
+    // SUCCESS: Proceed to analysis
+    console.log("PropIQ: All validations passed. Launching Intelligence Engine...");
     
+    // Lock buttons immediately to prevent double-submits or flickers
+    setLockButtons(true);
+
     onAnalyze({
       ...form,
-      area: Number(form.area), bhk: Number(form.bhk), age: Number(form.age),
-      floor: Number(form.floor), totalFloors: Number(form.totalFloors),
-      bathrooms: Number(form.bathrooms), balconies: Number(form.balconies),
+      area: Number(form.area), 
+      bhk: Number(form.bhk), 
+      age: Number(form.age),
+      floor: Number(form.floor), 
+      totalFloors: Number(form.totalFloors),
+      bathrooms: Number(form.bathrooms), 
+      balconies: Number(form.balconies),
       carpetArea: form.carpetArea ? Number(form.carpetArea) : null,
       parking: form.parking ?? false,
       gatedSociety: form.gatedSociety,
@@ -1421,9 +1430,18 @@ export default function PropertyForm({ onAnalyze }) {
               <div key={step} style={{
                 flex: 1,
                 height: '4px',
-                borderRadius: '2px',
-                background: step < currentStep ? 'var(--clr-accent-emerald)' : step === currentStep ? 'var(--clr-primary)' : 'rgba(255,255,255,0.1)',
-                transition: 'all var(--transition-base)'
+                borderRadius: '4px',   /* Slightly more rounded */
+                background: step < currentStep 
+                  ? 'linear-gradient(90deg, var(--clr-accent-emerald), #34d399)' 
+                  : step === currentStep 
+                    ? 'linear-gradient(90deg, var(--clr-primary), var(--clr-accent-cyan))' 
+                    : 'rgba(255, 255, 255, 0.12)', 
+                boxShadow: step < currentStep 
+                  ? '0 0 15px rgba(16, 185, 129, 0.4)' 
+                  : step === currentStep 
+                    ? '0 0 15px rgba(99, 102, 241, 0.4)' 
+                    : 'none',
+                transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
               }} />
             ))}
           </div>
@@ -1489,95 +1507,6 @@ export default function PropertyForm({ onAnalyze }) {
                 </div>
               </div>
 
-              {/* ── Refined Location Divider ── */}
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '16px',
-                margin: '28px 0 20px'
-              }}>
-                <div style={{ flex: 1, height: '1px', background: 'linear-gradient(to right, transparent, rgba(255,255,255,0.2), rgba(255,255,255,0.2))' }}></div>
-                <div style={{
-                  fontSize: '11px',
-                  fontWeight: 900,
-                  color: 'rgba(255,255,255,0.4)',
-                  letterSpacing: '2px',
-                  textTransform: 'uppercase',
-                  background: 'rgba(255,255,255,0.08)',
-                  padding: '4px 14px',
-                  borderRadius: '20px',
-                  border: '1px solid rgba(255,255,255,0.15)',
-                  boxShadow: '0 2px 10px rgba(0,0,0,0.2)'
-                }}>OR</div>
-                <div style={{ flex: 1, height: '1px', background: 'linear-gradient(to left, transparent, rgba(255,255,255,0.2), rgba(255,255,255,0.2))' }}></div>
-              </div>
-
-              {/* ── Premium Map Picker Button ── */}
-              <button 
-                type="button" 
-                onClick={() => setIsMapOpen(true)}
-                style={{ 
-                  width: '100%', 
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'flex-start',
-                  gap: '16px', 
-                  background: 'rgba(6, 182, 212, 0.08)', 
-                  border: '1px solid rgba(6, 182, 212, 0.2)',
-                  padding: '16px 24px',
-                  borderRadius: '20px',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                  backdropFilter: 'blur(10px)',
-                  position: 'relative',
-                  overflow: 'hidden'
-                }}
-                onMouseEnter={e => {
-                  e.currentTarget.style.background = 'rgba(6, 182, 212, 0.15)';
-                  e.currentTarget.style.borderColor = 'rgba(6, 182, 212, 0.4)';
-                  e.currentTarget.style.transform = 'translateY(-2px)';
-                  e.currentTarget.style.boxShadow = '0 12px 30px -10px rgba(6, 182, 212, 0.5)';
-                }}
-                onMouseLeave={e => {
-                  e.currentTarget.style.background = 'rgba(6, 182, 212, 0.08)';
-                  e.currentTarget.style.borderColor = 'rgba(6, 182, 212, 0.2)';
-                  e.currentTarget.style.transform = 'none';
-                  e.currentTarget.style.boxShadow = 'none';
-                }}
-              >
-                <div style={{ 
-                  background: 'linear-gradient(135deg, #06b6d4, #2dd4bf)', 
-                  borderRadius: '14px', 
-                  width: '40px', 
-                  height: '40px', 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'center', 
-                  color: 'white',
-                  boxShadow: '0 4px 15px rgba(6, 182, 212, 0.4)',
-                  position: 'relative'
-                }}>
-                  <MapPin size={20} />
-                  <div style={{
-                    position: 'absolute',
-                    inset: '-5px',
-                    border: '2px solid #06b6d4',
-                    borderRadius: '18px',
-                    opacity: 0.5,
-                    animation: 'pulse 2s infinite'
-                  }} />
-                </div>
-                <div style={{ textAlign: 'left' }}>
-                  <div style={{ fontSize: '14px', fontWeight: 600, color: 'white', letterSpacing: '0.3px' }}>Pick Location from Map</div>
-                  <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', marginTop: '2px' }}>Faster pinpointing for State, City & Locality</div>
-                </div>
-              </button>
-
-              <MapModal 
-                isOpen={isMapOpen} 
-                onClose={() => setIsMapOpen(false)} 
-                onSelectLocation={handleMapLocationSelect} 
-              />
             </div>
           )}
 
@@ -1889,7 +1818,7 @@ export default function PropertyForm({ onAnalyze }) {
 
 
           {/* Actions */}
-          <div className="form-actions" style={{ marginTop: '30px', borderTop: '1px solid var(--clr-border)', paddingTop: '24px', justifyContent: 'space-between' }}>
+          <div className="form-actions" style={{ marginTop: '30px', borderTop: '1px solid rgba(255,255,255,0.15)', paddingTop: '24px', justifyContent: 'space-between' }}>
             {currentStep > 1 ? (
               <button type="button" className="btn-secondary" onClick={handlePrevStep}>
                 ← Back
@@ -1909,10 +1838,20 @@ export default function PropertyForm({ onAnalyze }) {
                 onClick={handleSubmit}
                 disabled={lockButtons}
                 style={{ 
-                  opacity: lockButtons ? 0.6 : 1,
-                  cursor: lockButtons ? 'not-allowed' : 'pointer'
+                  opacity: lockButtons ? 0.7 : 1,
+                  cursor: lockButtons ? 'not-allowed' : 'pointer',
+                  minWidth: '220px'
                 }}>
-                <span>🧠</span> Run Intelligence Engine
+                {lockButtons ? (
+                  <>
+                    <span className="spinner-mini" style={{ marginRight: '8px' }}>◌</span>
+                    Launching Engine...
+                  </>
+                ) : (
+                  <>
+                    <span>🧠</span> Run Intelligence Engine
+                  </>
+                )}
               </button>
             )}
           </div>
