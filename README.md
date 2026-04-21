@@ -2,8 +2,6 @@
 
 <div align="center">
 
-![PropIQ Banner](public/prop_iq_hero_visual.png)
-
 **AI-powered property valuation for the Indian real estate market**  
 *From raw property data to institutional-grade intelligence in seconds*
 
@@ -217,8 +215,8 @@ mlEngine.js → runMLEngine(inputs)
 Result → 6 dashboard panels:
   ┌─────────────────────┬───────────────────────────┐
   │ BuyerDashboard      │ InvestorDashboard         │
-  │ IntelCards          │ ExplainabilityPanel        │
-  │ TCOCalculator       │ ConstructionBreakdown      │
+  │ IntelCards          │ ExplainabilityPanel       │
+  │ TCOCalculator       │ ConstructionBreakdown     │
   └─────────────────────┴───────────────────────────┘
 ```
 
@@ -488,6 +486,8 @@ PropIQ uses a **Warm Crimson / Deep Slate** design language:
 - [x] CPWD construction cost breakdown
 - [x] 4-step property input wizard
 - [x] All 28 Indian states + UTs
+- [ ] Redesign User Interface
+- [ ] Deployment using Vercel
 - [ ] Real transaction data integration (MahaRERA / NIC)
 - [ ] Geospatial heatmap (Leaflet/Mapbox)
 - [ ] Docker Compose deployment
