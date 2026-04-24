@@ -1,4 +1,6 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+/* =========================================
+   PropIQ — Design System & Global Styles
+   ========================================= */
 
 *, *::before, *::after {
   box-sizing: border-box;
@@ -7,197 +9,111 @@
 }
 
 :root {
-  /* "Trustful & Authentic" Palette (MVPFast Inspired) */
-  --clr-bg-page: #f9fbf8; 
-  --clr-text-main: #111111;
-  --clr-text-muted: rgba(17, 17, 17, 0.6);
+  /* Apple Glass Color Palette - Frosted Translucency */
+  --clr-bg-900: #0a0a0c;
+  --clr-bg-800: #121216;
+  --clr-bg-700: #1a1a20;
+  --clr-bg-600: #24242a;
   
-  --clr-accent-blue: #eef4ff; /* Light blue for badges */
-  --clr-accent-blue-text: #4a90e2;
+  /* Dramatically increased translucency for glassmorphism */
+  --clr-surface: rgba(255, 255, 255, 0.05);
+  --clr-surface-2: rgba(255, 255, 255, 0.08);
+  --clr-surface-3: rgba(255, 255, 255, 0.12);
   
-  --clr-moss-500: #2d5a27;   /* Deep Organic Green */
-  --clr-moss-400: #4a8a42;
+  /* More prominent semi-transparent borders for glass edges */
+  --clr-border: rgba(255, 255, 255, 0.15);
+  --clr-border-bright: rgba(255, 255, 255, 0.25);
+
+  /* Vibrant Aurora Accents */
+  --clr-primary: #6366f1;
+  --clr-primary-bright: #818cf8;
+  --clr-accent-cyan: #22d3ee;
+  --clr-accent-teal: #2dd4bf;
+  --clr-accent-emerald: #10b981;
+  --clr-accent-rose: #fb7185;
+  --clr-accent-indigo: #818cf8;
+  --clr-accent-purple: #c084fc;
+  --clr-accent-amber: #fbbf24;
+
+  /* Aurora Colors - High Vibrancy */
+  --clr-aurora-1: #6366f1;
+  --clr-aurora-2: #a855f7;
+  --clr-aurora-3: #ec4899;
+  --clr-aurora-4: #06b6d4;
+  --clr-aurora-5: #10b981;
+
+  /* Premium Glass System */
+  --glass-bg: rgba(10, 15, 30, 0.45);
+  --glass-bg-bright: rgba(255, 255, 255, 0.08);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-border-bright: rgba(255, 255, 255, 0.2);
+  --glass-blur: blur(24px);
+  --glass-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  --glass-inner-glow: inset 0 1px 1px rgba(255, 255, 255, 0.15);
+
+  /* Role Colors - Warm/Crimson Theme */
+  --role-buyer: #FFA586;
+  --role-agent: #B51A2B;
+  --role-bank: #2dd4bf;
+  --role-investor: #f59e0b;
+
+  /* Text - High Contrast & Clarity */
+  --text-primary: #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.7);
+  --text-muted: rgba(255, 255, 255, 0.45);
+  --text-accent: #FFA586;
+
+  /* Typography — Plus Jakarta Sans (display) + DM Sans (body) */
+  --font-display: 'Plus Jakarta Sans', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+
+  /* Spacing */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+
+  /* Border Radius */
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-2xl: 32px;
+  --radius-full: 9999px;
+
+  /* Shadows - Apple Glass 3D Effect */
+  --shadow-glow: 0 0 60px rgba(79, 70, 229, 0.3);
+  --shadow-card: 0 15px 35px -5px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.15), inset 0 -1px 1px rgba(255, 255, 255, 0.02);
+  --shadow-elevated: 0 25px 50px -12px rgba(0, 0, 0, 0.6), inset 0 1px 2px rgba(255, 255, 255, 0.25), inset 0 -1px 2px rgba(255, 255, 255, 0.03);
   
-  --clr-primary: var(--clr-text-main);
-  
-  /* Typography */
-  --font-body: 'Inter', sans-serif;
-  --ls-heading: -0.03em;
+  /* Emerald Trust Indicator Glow */
+  --shadow-trust: 0 0 20px rgba(16, 185, 129, 0.15), inset 0 0 10px rgba(16, 185, 129, 0.1);
+
+  /* Transitions */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 500ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+html {
+  scroll-behavior: smooth;
+  height: 100%;
 }
 
 body {
   font-family: var(--font-body);
-  background-color: var(--clr-bg-page);
-  color: var(--clr-text-main);
-  line-height: 1.5;
-  font-weight: 400;
-  overflow-x: hidden;
+  background-color: var(--clr-bg-900);
+  color: var(--text-primary);
+  line-height: 1.7;
+  font-weight: 500;
+  font-size: 16px;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
 }
-
-h1, h2, h3 {
-  letter-spacing: var(--ls-heading);
-  font-weight: 800;
-  line-height: 1.1;
-}
-
-/* Badge Style */
-.badge-mini {
-  display: inline-flex;
-  align-items: center;
-  padding: 6px 14px;
-  background: var(--clr-accent-blue);
-  color: var(--clr-accent-blue-text);
-  border-radius: 4px;
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  margin-bottom: 24px;
-}
-
-/* Service Card (Floating) */
-.service-pill {
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(0, 0, 0, 0.05);
-  padding: 10px 16px;
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--clr-text-muted);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-  transition: all 0.3s ease;
-}
-
-.service-pill:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.06);
-  color: var(--clr-text-main);
-}
-
-/* Minimal Action Button */
-.btn-auth {
-  background: var(--clr-text-main);
-  color: #fff;
-  padding: 16px 36px;
-  border-radius: 6px;
-  font-weight: 700;
-  font-size: 15px;
-  border: none;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.btn-auth:hover {
-  background: #222;
-  transform: translateY(-1px);
-}
-
-/* Custom Fluid Cursor */
-.custom-cursor {
-  width: 20px;
-  height: 20px;
-  background: var(--clr-moss-500);
-  border-radius: 50%;
-  position: fixed;
-  pointer-events: none;
-  z-index: 9999;
-  transition: transform 0.1s ease-out;
-  mix-blend-mode: difference;
-}
-
-.custom-cursor-follower {
-  width: 40px;
-  height: 40px;
-  border: 1px solid var(--clr-moss-500);
-  border-radius: 50%;
-  position: fixed;
-  pointer-events: none;
-  z-index: 9998;
-  transition: transform 0.2s ease-out;
-  opacity: 0.3;
-}
-
-/* Smooth Scrolling */
-html {
-  scroll-behavior: smooth;
-}
-
-/* Rise Up Animation */
-@keyframes riseUp {
-  from { opacity: 0; transform: translateY(40px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* Float Animation */
-@keyframes float {
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
-  100% { transform: translateY(0px); }
-}
-
-.ticker-wrapper {
-  display: inline-block;
-  animation: ticker 40s linear infinite;
-}
-
-.ticker-item {
-  display: inline-block;
-  padding: 0 40px;
-  font-size: 12px;
-  font-weight: 800;
-  color: #fff;
-  letter-spacing: 0.2px;
-}
-
-.ticker-item span.up { color: var(--clr-moss-500); }
-.ticker-item span.down { color: #ff4d4d; }
-
-/* Strike Style Buttons */
-.btn-strike {
-  background: var(--clr-moss-500);
-  color: #000;
-  padding: 16px 32px;
-  border-radius: 6px;
-  font-weight: 900;
-  font-size: 15px;
-  border: none;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.23, 1, 0.32, 1);
-  letter-spacing: -0.01em;
-}
-
-.btn-strike:hover {
-  background: var(--clr-moss-400);
-  transform: translateY(-2px);
-  box-shadow: 0 10px 30px rgba(0, 255, 0, 0.2);
-}
-
-/* Logo Pill Markers */
-.logo-pill {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 8px 16px;
-  border-radius: 50px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: 13px;
-  font-weight: 700;
-  color: #fff;
-  backdrop-filter: blur(10px);
-}
-
 
 #root {
   display: flex;
@@ -396,58 +312,49 @@ html {
   50% { opacity: 0.6; transform: scale(0.8); }
 }
 
-/* ---- Hero & Statement Section ---- */
+/* ---- Hero ---- */
 .hero {
   padding: var(--space-3xl) var(--space-xl) var(--space-2xl);
   text-align: center;
   position: relative;
-  max-width: 1400px;
-  margin: 0 auto;
+}
+
+.hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: 6px 16px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--clr-border-bright);
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(10px);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--clr-primary-light);
+  margin-bottom: var(--space-lg);
 }
 
 .hero-title {
   font-family: var(--font-display);
-  font-size: clamp(48px, 8vw, 120px);
+  font-size: clamp(36px, 6vw, 72px);
   font-weight: 900;
-  line-height: 0.95;
-  letter-spacing: var(--ls-statement);
-  margin-bottom: var(--space-xl);
-  color: var(--text-light);
+  line-height: 1.05;
+  letter-spacing: -2.5px;
+  margin-bottom: var(--space-lg);
+  text-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
 
 .hero-subtitle {
   font-family: var(--font-body);
-  font-size: clamp(18px, 2.5vw, 24px);
-  font-weight: 400;
-  color: var(--text-muted-light);
-  max-width: 800px;
+  font-size: clamp(17px, 2vw, 21px);
+  font-weight: 500;
+  color: var(--text-secondary);
+  max-width: 680px;
   margin: 0 auto var(--space-2xl);
-  line-height: 1.4;
-  letter-spacing: -0.01em;
+  line-height: 1.7;
 }
-
-/* High Contrast Section Blocks */
-.section-light {
-  background-color: var(--clr-bg-light);
-  color: var(--text-dark);
-}
-
-.section-light .section-label,
-.section-light .hero-title,
-.section-light .form-header-text h3 {
-  color: var(--text-dark);
-}
-
-.section-light .hero-subtitle,
-.section-light .form-header-text p {
-  color: var(--text-muted-dark);
-}
-
-.section-dark {
-  background-color: var(--clr-forest-900);
-  color: var(--text-light);
-}
-
 
 /* ---- Role Selector ---- */
 .role-section {
