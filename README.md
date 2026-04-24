@@ -46,7 +46,7 @@ API Docs  →  http://localhost:8000/docs
 │                    USER BROWSER                         │
 │                                                         │
 │  ┌──────────┐    ┌──────────────┐    ┌───────────────┐  │
-│  │   Hero   │──▶│ PropertyForm │───▶│ Results Panel │  │
+│  │   Hero   │───▶│ PropertyForm │───▶│ Results Panel│  │
 │  │  (CTA)   │    │ (4-Step Wiz) │    │ (Dashboards)  │  │
 │  └──────────┘    └──────┬───────┘    └───────────────┘  │
 │                         │                               │
