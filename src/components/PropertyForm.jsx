@@ -1,367 +1,453 @@
-// src/components/PropertyForm.jsx
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { ChevronRight, ChevronLeft, Zap } from 'lucide-react';
 import SearchableSelect from './SearchableSelect';
-import { ArrowRight, Zap } from 'lucide-react';
 
-// ── Data ──────────────────────────────────────────────────────────────────────
-const STATE_CITIES = {
-  'Andhra Pradesh':       ['Visakhapatnam','Vijayawada','Guntur','Tirupati','Kurnool','Nellore','Rajahmundry','Kadapa','Kakinada','Eluru','Anantapur','Ongole','Chittoor','Other'],
-  'Arunachal Pradesh':    ['Itanagar','Naharlagun','Pasighat','Tawang','Other'],
-  'Assam':                ['Guwahati','Dibrugarh','Silchar','Jorhat','Tinsukia','Nagaon','Other'],
-  'Bihar':                ['Patna','Gaya','Muzaffarpur','Bhagalpur','Darbhanga','Purnia','Arrah','Begusarai','Other'],
-  'Chhattisgarh':         ['Raipur','Bhilai','Bilaspur','Durg','Korba','Rajnandgaon','Other'],
-  'Goa':                  ['Panaji','Margao','Vasco da Gama','Mapusa','Ponda','Other'],
-  'Gujarat':              ['Ahmedabad','Surat','Vadodara','Rajkot','Bhavnagar','Jamnagar','Gandhinagar','Anand','Mehsana','Morbi','Navsari','Other'],
-  'Haryana':              ['Gurugram','Faridabad','Panipat','Ambala','Yamunanagar','Rohtak','Hisar','Sonipat','Karnal','Other'],
-  'Himachal Pradesh':     ['Shimla','Manali','Dharamsala','Solan','Kullu','Mandi','Other'],
-  'Jharkhand':            ['Ranchi','Jamshedpur','Dhanbad','Bokaro','Hazaribagh','Other'],
-  'Karnataka':            ['Bangalore','Mysuru','Mangalore','Hubli-Dharwad','Belagavi','Kalaburagi','Tumkur','Davanagere','Shivamogga','Udupi','Other'],
-  'Kerala':               ['Kochi','Thiruvananthapuram','Kozhikode','Thrissur','Kannur','Kollam','Palakkad','Malappuram','Other'],
-  'Madhya Pradesh':       ['Bhopal','Indore','Gwalior','Jabalpur','Ujjain','Sagar','Dewas','Satna','Ratlam','Other'],
-  'Maharashtra':          ['Mumbai','Pune','Nagpur','Nashik','Thane','Aurangabad','Solapur','Kolhapur','Navi Mumbai','Amravati','Latur','Akola','Other'],
-  'Manipur':              ['Imphal','Thoubal','Bishnupur','Other'],
-  'Meghalaya':            ['Shillong','Tura','Jowai','Other'],
-  'Mizoram':              ['Aizawl','Lunglei','Other'],
-  'Nagaland':             ['Kohima','Dimapur','Mokokchung','Other'],
-  'Odisha':               ['Bhubaneswar','Cuttack','Rourkela','Berhampur','Puri','Brahmapur','Sambalpur','Other'],
-  'Punjab':               ['Ludhiana','Amritsar','Jalandhar','Patiala','Bathinda','Mohali','Pathankot','Other'],
-  'Rajasthan':            ['Jaipur','Jodhpur','Udaipur','Kota','Bikaner','Ajmer','Alwar','Sikar','Bhilwara','Other'],
-  'Sikkim':               ['Gangtok','Namchi','Other'],
-  'Tamil Nadu':           ['Chennai','Coimbatore','Madurai','Salem','Tiruchirappalli','Tirunelveli','Erode','Vellore','Thanjavur','Tiruppur','Other'],
-  'Telangana':            ['Hyderabad','Warangal','Nizamabad','Karimnagar','Khammam','Ramagundam','Other'],
-  'Tripura':              ['Agartala','Dharmanagar','Other'],
-  'Uttar Pradesh':        ['Lucknow','Kanpur','Agra','Varanasi','Prayagraj','Noida','Ghaziabad','Meerut','Mathura','Bareilly','Aligarh','Gorakhpur','Moradabad','Other'],
-  'Uttarakhand':          ['Dehradun','Haridwar','Nainital','Roorkee','Haldwani','Mussoorie','Rishikesh','Other'],
-  'West Bengal':          ['Kolkata','Howrah','Durgapur','Siliguri','Asansol','Bardhaman','Kharagpur','Haldia','Other'],
-  'Delhi (NCT)':          ['New Delhi','Central Delhi','North Delhi','South Delhi','East Delhi','West Delhi','Dwarka','Rohini','Other'],
-  'Chandigarh (UT)':      ['Chandigarh','Mohali','Panchkula','Other'],
-  'Jammu & Kashmir':      ['Srinagar','Jammu','Anantnag','Sopore','Other'],
-  'Ladakh':               ['Leh','Kargil','Other'],
-  'Puducherry':           ['Puducherry','Karaikal','Mahe','Other'],
-  'Andaman & Nicobar':    ['Port Blair','Other'],
-  'Dadra & NH / D&D':     ['Daman','Silvassa','Other'],
-  'Lakshadweep':          ['Kavaratti','Other'],
-  'Other':                ['Other'],
-};
+const CITIES = [
+  'Mumbai','Pune','Bangalore','New Delhi','Hyderabad','Chennai','Ahmedabad',
+  'Kolkata','Jaipur','Lucknow','Noida','Gurugram','Navi Mumbai','Thane',
+  'Chandigarh','Bhopal','Indore','Kochi','Surat','Patna','Other'
+];
 
-const CITY_LOCALITIES = {
-  Mumbai: ['Bandra West','Bandra East','Andheri West','Andheri East','Powai','Juhu','Malad West','Malad East','Borivali West','Borivali East','Kandivali','Goregaon','Lokhandwala','Worli','Lower Parel','Prabhadevi','Dadar','Matunga','Chembur','Ghatkopar','Vikhroli','Mulund','Kurla','Bhandup','Thane West','Thane East','Navi Mumbai','Kharghar','Vashi','Panvel','Nerul','Belapur','Ulwe','Other'],
-  Pune: ['Koregaon Park','Baner','Hinjewadi','Viman Nagar','Kharadi','Wakad','Hadapsar','Kalyani Nagar','Aundh','Kothrud','Bavdhan','Balewadi','Sus Road','Undri','Kondhwa','Mundhwa','Magarpatta','Wagholi','Ambegaon','Narhe','Pisoli','NIBM Road','Wanowrie','Other'],
-  Bangalore: ['Koramangala','Indiranagar','Whitefield','Electronic City','HSR Layout','Marathahalli','Jayanagar','Bannerghatta Road','Sarjapur Road','Yelahanka','Hebbal','JP Nagar','BTM Layout','Rajajinagar','Malleshwaram','Bellandur','Varthur','KR Puram','Banaswadi','Kaggadasapura','Domlur','RT Nagar','Devanahalli','Other'],
-  Hyderabad: ['Banjara Hills','Jubilee Hills','Gachibowli','Kondapur','Madhapur','HITEC City','Kukatpally','Miyapur','Begumpet','Ameerpet','SR Nagar','Kokapet','Nallagandla','Manikonda','Tolichowki','Uppal','L B Nagar','Attapur','Other'],
-  'New Delhi': ['Connaught Place','Hauz Khas','Vasant Kunj','Dwarka','Rohini','Pitampura','South Extension','Lajpat Nagar','Defence Colony','Mayur Vihar','Saket','Green Park','Greater Kailash','Janakpuri','Paschim Vihar','Rajouri Garden','Other'],
-  Chennai: ['Anna Nagar','T. Nagar','Adyar','Velachery','Perambur','OMR','Porur','Tambaram','Sholinganallur','Pallavaram','Ambattur','Mogappair','Chromepet','Guduvanchery','Pallikaranai','Mylapore','Nungambakkam','Kilpauk','Other'],
-  Other: ['Other'],
-};
+const PROPERTY_TYPES = ['Flat','Independent House','Plot','Villa','Commercial'];
+const DIRECTIONS    = ['North','South','East','West','Corner'];
+const FURNISHING    = ['Fully Furnished','Semi-Furnished','Unfurnished'];
+const USAGE_TYPES   = ['Shop','Office','Showroom'];
+const AMENITIES_LIST = ['Lift','Power Backup','Water Supply 24x7','Security Guard','CCTV','Gym','Club House','Swimming Pool','Garden'];
+const NEARBY_LIST    = ['School','Hospital','Metro Station','Market / Mall','Park','Bus Stop'];
 
-const STATES = Object.keys(STATE_CITIES).filter(s => s !== 'Other').sort().concat('Other');
-const DEMAND_LEVELS     = ['Premium', 'High', 'Medium', 'Low', 'Emerging'];
-const PROPERTY_TYPES    = ['Apartment', 'Villa', 'Row House', 'Builder Floor', 'Penthouse', 'Studio', 'Plot / Land'];
-const AMENITIES_LIST    = ['Swimming Pool', 'Gym', 'Clubhouse', 'Security', 'Garden', 'Power Backup', 'CCTV', 'Children Play Area'];
-
-const BHK_RANGES = {
-  Apartment:      [1, 2, 3, 4, 5],
-  Villa:          [2, 3, 4, 5, 6],
-  'Row House':    [2, 3, 4],
-  'Builder Floor':[2, 3, 4],
-  Penthouse:      [3, 4, 5, 6],
-  Studio:         [],
-};
-
-const MIN_AREA_BY_TYPE = {
-  Apartment:      { 1: 350, 2: 600, 3: 900, 4: 1200, 5: 1800 },
-  Villa:          { 2: 1500, 3: 2200, 4: 3000, 5: 4000, 6: 5000 },
-  'Row House':    { 2: 900, 3: 1400, 4: 1800 },
-  'Builder Floor':{ 2: 600, 3: 900, 4: 1200 },
-  Penthouse:      { 3: 2000, 4: 3000, 5: 4000, 6: 5500 },
-  Studio:         null,
-};
-
-const maxBath = (type, bhk) => {
-  if (type === 'Studio') return 1;
-  return Math.min(Number(bhk || 1) + 1, 5);
-};
-
-const DEFAULT_FORM = {
-  state: '', city: '', locality: '', localityDemand: '',
-  societyName: '', propertyType: '', bhk: '', area: '', age: '', floor: '', totalFloors: '', 
-  furnished: '', amenities: [], gatedSociety: null, brokerQuote: ''
-};
-
-// ── Sub-components ────────────────────────────────────────────────────────────
 function FieldError({ msg }) {
   if (!msg) return null;
   return (
-    <div style={{
-      marginTop: '8px', fontSize: '11px', fontWeight: 700, color: '#d9534f',
-      padding: '8px 12px', borderRadius: '4px', background: 'rgba(217, 83, 79, 0.05)',
-      border: '1px solid rgba(217, 83, 79, 0.1)'
-    }}>
-      ⚠ {msg}
+    <div style={{ color: '#e53e3e', fontSize: '12px', fontWeight: 700, marginTop: '6px', display: 'flex', gap: '6px', alignItems: 'center' }}>
+      <Zap size={11} /> {msg}
     </div>
   );
 }
 
-function StepBadge({ n, label, active, done }) {
+function Label({ children }) {
+  return <label className="form-label" style={{ display: 'block', marginBottom: '10px', fontSize: '12px', fontWeight: 800, letterSpacing: '0.5px', color: 'rgba(0,0,0,0.55)', textTransform: 'uppercase' }}>{children}</label>;
+}
+
+function GlassInput({ placeholder, value, onChange, type = 'text' }) {
   return (
-    <div style={{ 
-      display: 'flex', 
-      alignItems: 'center', 
-      gap: '12px', 
-      opacity: done ? 1 : (active ? 1 : 0.4),
-      transition: 'all 0.3s ease'
-    }}>
-      <div style={{
-        width: 28, height: 28, borderRadius: '4px',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: '11px', fontWeight: 900,
-        background: done ? 'var(--clr-moss-500)' : (active ? 'var(--clr-text-main)' : 'transparent'),
-        color: (done || active) ? '#fff' : 'var(--clr-text-main)',
-        border: (done || active) ? 'none' : '1px solid rgba(0,0,0,0.1)'
-      }}>
-        {done ? '✓' : n}
-      </div>
-      <span style={{ 
-        fontSize: '11px', 
-        fontWeight: 800, 
-        color: 'var(--clr-text-main)', 
-        letterSpacing: '1px'
-      }}>{label}</span>
-    </div>
+    <input
+      type={type}
+      className="form-input"
+      placeholder={placeholder}
+      value={value}
+      onChange={onChange}
+      style={{ width: '100%' }}
+    />
   );
 }
 
-function PropertyCardPreview({ form }) {
+function CheckGroup({ items, selected, onChange }) {
+  const toggle = (item) => {
+    const next = selected.includes(item) ? selected.filter(i => i !== item) : [...selected, item];
+    onChange(next);
+  };
   return (
-    <div style={{
-      marginTop: '60px', padding: '40px', borderRadius: '12px', background: '#fff',
-      border: '1px solid rgba(0,0,0,0.05)', color: 'var(--clr-text-main)',
-      display: 'flex', flexDirection: 'column', gap: '24px', 
-      boxShadow: '0 20px 60px rgba(0,0,0,0.02)',
-      position: 'relative', overflow: 'hidden'
-    }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div style={{ fontSize: '10px', fontWeight: 900, color: 'var(--clr-moss-500)', letterSpacing: '2px' }}>DATA PREVIEW</div>
-        <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--clr-text-muted)' }}>{form.propertyType || 'Asset Structure'}</div>
-      </div>
-      
-      <div style={{ fontSize: '28px', fontWeight: 800 }}>
-        {form.societyName || 'Subject Property'}
-      </div>
-      
-      <div style={{ fontSize: '15px', color: 'var(--clr-text-muted)', display: 'flex', gap: '10px', alignItems: 'center' }}>
-        <span>{form.locality || 'Location'}</span>
-        <span style={{ width: 4, height: 4, borderRadius: '50%', background: 'rgba(0,0,0,0.1)' }}></span>
-        <span>{form.city || 'Region'}</span>
-      </div>
-      
-      <div style={{ display: 'flex', gap: '32px' }}>
-        {form.bhk && (
-          <div>
-            <div style={{ fontSize: '10px', color: 'var(--clr-text-muted)', fontWeight: 800, marginBottom: '4px' }}>BHK</div>
-            <div style={{ fontSize: '18px', fontWeight: 800 }}>{form.bhk}</div>
-          </div>
-        )}
-        {form.area && (
-          <div>
-            <div style={{ fontSize: '10px', color: 'var(--clr-text-muted)', fontWeight: 800, marginBottom: '4px' }}>SQFT</div>
-            <div style={{ fontSize: '18px', fontWeight: 800 }}>{form.area}</div>
-          </div>
-        )}
-      </div>
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+      {items.map(item => {
+        const active = selected.includes(item);
+        return (
+          <button
+            key={item}
+            type="button"
+            onClick={() => toggle(item)}
+            style={{
+              padding: '10px 18px', borderRadius: '12px', fontSize: '13px', fontWeight: 700,
+              cursor: 'pointer', transition: 'all 0.25s',
+              background: active ? 'var(--clr-moss-500)' : 'rgba(255,255,255,0.5)',
+              color: active ? '#fff' : '#333',
+              border: active ? '1.5px solid var(--clr-moss-500)' : '1.5px solid rgba(0,0,0,0.08)',
+              backdropFilter: 'blur(20px)',
+            }}
+          >{item}</button>
+        );
+      })}
     </div>
   );
 }
 
-function TypeSpecFields({ form, errors, setField }) {
-  const pt = form.propertyType;
-  if (!pt) return null;
-  
-  return (
-    <div className="form-grid" style={{ gap: '32px' }}>
-      <div className="form-field">
-        <label className="form-label" style={{ fontSize: '12px', fontWeight: 800, color: 'var(--clr-text-main)', marginBottom: '12px', display: 'block' }}>Bedrooms (BHK) *</label>
-        <SearchableSelect
-          options={BHK_RANGES[pt] || []}
-          value={form.bhk}
-          onChange={e => setField('bhk', e.target.value)}
-          placeholder="Select BHK..."
-          error={errors.bhk}
-        />
-        <FieldError msg={errors.bhk} />
-      </div>
-      <div className="form-field">
-        <label className="form-label" style={{ fontSize: '12px', fontWeight: 800, color: 'var(--clr-text-main)', marginBottom: '12px', display: 'block' }}>Built-up Area (sq ft) *</label>
-        <input type="number" 
-          className="form-input"
-          style={{ padding: '14px 18px', borderRadius: '4px', border: '1px solid rgba(0,0,0,0.1)', width: '100%', fontSize: '14px' }}
-          placeholder="e.g. 1200"
-          value={form.area} onChange={e => setField('area', e.target.value)} />
-        <FieldError msg={errors.area} />
-      </div>
-      <div className="form-field">
-        <label className="form-label" style={{ fontSize: '12px', fontWeight: 800, color: 'var(--clr-text-main)', marginBottom: '12px', display: 'block' }}>Interior Status *</label>
-        <SearchableSelect
-          options={['Fully Furnished', 'Semi-Furnished', 'Unfurnished']}
-          value={form.furnished}
-          onChange={e => setField('furnished', e.target.value)}
-          placeholder="Select status..."
-          error={errors.furnished}
-        />
-        <FieldError msg={errors.furnished} />
-      </div>
-      <div className="form-field">
-        <label className="form-label" style={{ fontSize: '12px', fontWeight: 800, color: 'var(--clr-text-main)', marginBottom: '12px', display: 'block' }}>Asset Age (Years) *</label>
-        <input type="number" 
-          className="form-input"
-          style={{ padding: '14px 18px', borderRadius: '4px', border: '1px solid rgba(0,0,0,0.1)', width: '100%', fontSize: '14px' }}
-          placeholder="e.g. 2"
-          value={form.age} onChange={e => setField('age', e.target.value)} />
-      </div>
-    </div>
-  );
-}
+const STEP_TITLES = [
+  { n: '01', label: 'LOCATION' },
+  { n: '02', label: 'ASSET' },
+  { n: '03', label: 'SPECS' },
+  { n: '04', label: 'FEATURES' },
+  { n: '05', label: 'PREDICT' },
+];
 
-function validate(f) {
+const EMPTY = {
+  city: '', area_name: '',
+  propertyType: '', facing: '', colony: '',
+  bhk: '', floorNo: '', totalFloors: '', area: '', age: '', furnished: '', parking: false,
+  plotArea: '', builtupArea: '', floors: '', garden: false,
+  dimensions: '', cornerPlot: false,
+  totalArea: '', usageType: '',
+  amenities: [], nearby: [],
+};
+
+function validate(step, form) {
   const e = {};
-  if (!f.state) e.state = 'State is required.';
-  if (!f.city) e.city = 'City is required.';
-  if (!f.locality) e.locality = 'Locality is required.';
-  if (!f.propertyType) e.propertyType = 'Property type is required.';
+  if (step === 1) {
+    if (!form.city) e.city = 'Please select a city';
+  }
+  if (step === 2) {
+    if (!form.propertyType) e.propertyType = 'Select property type';
+    if (!form.facing) e.facing = 'Select facing direction';
+    if (!form.colony.trim()) e.colony = 'Enter colony / locality name';
+  }
+  if (step === 3) {
+    const t = form.propertyType;
+    if (t === 'Flat') {
+      if (!form.bhk) e.bhk = 'Required';
+      if (!form.floorNo) e.floorNo = 'Required';
+      if (!form.totalFloors) e.totalFloors = 'Required';
+      if (!form.area) e.area = 'Required';
+      if (!form.age) e.age = 'Required';
+      if (!form.furnished) e.furnished = 'Required';
+    }
+    if (t === 'Independent House' || t === 'Villa') {
+      if (!form.bhk) e.bhk = 'Required';
+      if (!form.plotArea) e.plotArea = 'Required';
+      if (!form.builtupArea) e.builtupArea = 'Required';
+      if (!form.age) e.age = 'Required';
+    }
+    if (t === 'Plot') {
+      if (!form.plotArea) e.plotArea = 'Required';
+    }
+    if (t === 'Commercial') {
+      if (!form.totalArea) e.totalArea = 'Required';
+      if (!form.usageType) e.usageType = 'Required';
+    }
+  }
   return e;
 }
 
-// ── Main Component ────────────────────────────────────────────────────────────
 export default function PropertyForm({ onAnalyze }) {
-  const [currentStep, setCurrentStep] = useState(1);
-  const [form, setForm]       = useState(DEFAULT_FORM);
-  const [errors, setErrors]   = useState({});
-  const [lockButtons, setLockButtons] = useState(false);
+  const [step, setStep]   = useState(1);
+  const [form, setForm]   = useState(EMPTY);
+  const [errors, setErrors] = useState({});
 
-  const STEP_FIELDS = {
-    1: ['state', 'city', 'locality', 'localityDemand'],
-    2: ['propertyType', 'societyName'],
-    3: ['bhk', 'area', 'furnished', 'age'],
-    4: ['brokerQuote']
+  const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
+
+  const sanitizeNum = (v) => v.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');
+
+  const next = () => {
+    const e = validate(step, form);
+    if (Object.keys(e).length) { setErrors(e); return; }
+    setErrors({});
+    if (step < 5) setStep(s => s + 1);
   };
 
-  const citiesRaw = form.state ? (STATE_CITIES[form.state] || []) : [];
-  const cities = [...new Set([...citiesRaw, form.city].filter(Boolean))].filter(c => c !== 'Other').sort().concat('Other');
-  const localitiesRaw = form.city ? (CITY_LOCALITIES[form.city] || ['Other']) : [];
-  const localities = [...new Set([...localitiesRaw, form.locality].filter(Boolean))].filter(l => l !== 'Other').sort().concat('Other');
+  const back = () => { setErrors({}); setStep(s => s - 1); };
 
-  function setField(key, val) {
-    setForm(prev => ({ ...prev, [key]: val }));
-    const errs = validate({ ...form, [key]: val });
-    setErrors(errs);
-  }
+  const submit = () => {
+    const t = form.propertyType;
+    const areaVal = t === 'Flat' ? form.area
+      : (t === 'Independent House' || t === 'Villa') ? form.builtupArea
+      : t === 'Plot' ? form.plotArea
+      : form.totalArea;
 
-  const handleNextStep = () => {
-    const fields = STEP_FIELDS[currentStep] || [];
-    const allErrors = validate(form);
-    const hasErrors = fields.some(k => allErrors[k]);
-    if (!hasErrors) {
-      setCurrentStep(prev => prev + 1);
-    } else {
-      setErrors(allErrors);
-    }
+    const amenityScore = (form.amenities.length / AMENITIES_LIST.length).toFixed(2);
+
+    const payload = {
+      city: form.city,
+      locality: form.colony || 'Other',
+      propertyType: t === 'Flat' ? 'Apartment'
+        : t === 'Independent House' ? 'Builder Floor'
+        : t === 'Villa' ? 'Villa'
+        : t === 'Plot' ? 'Plot / Land'
+        : 'Apartment',
+      area: Number(areaVal) || 1000,
+      bhk: Number(form.bhk) || 0,
+      age: Number(form.age) || 0,
+      furnished: form.furnished || 'Unfurnished',
+      facing: form.facing || 'North',
+      parking: form.parking,
+      gatedSociety: form.amenities.includes('Security Guard'),
+      amenityScore: Number(amenityScore),
+      nearbySchool: form.nearby.includes('School'),
+      nearbyHospital: form.nearby.includes('Hospital'),
+      nearbyMetro: form.nearby.includes('Metro Station'),
+      localityDemand: 'Medium',
+    };
+    onAnalyze(payload);
   };
 
-  const handlePrevStep = () => setCurrentStep(prev => prev - 1);
-
-  const handleSubmit = e => {
-    if (e && e.preventDefault) e.preventDefault();
-    if (currentStep < 4) return handleNextStep();
-    onAnalyze({ ...form, area: Number(form.area), bhk: Number(form.bhk), age: Number(form.age) });
-  };
+  const pt = form.propertyType;
 
   return (
-    <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '0 5%' }}>
-      <div style={{ 
-        background: '#fff', 
-        borderRadius: '24px',
+    <div style={{ maxWidth: '900px', margin: '0 auto', padding: '0 5%' }}>
+      {/* Wizard Shell */}
+      <div style={{
+        borderRadius: '32px',
+        background: 'rgba(255,255,255,0.75)',
+        backdropFilter: 'blur(30px)',
         border: '1px solid rgba(0,0,0,0.05)',
-        boxShadow: '0 20px 60px rgba(0,0,0,0.02)',
-        overflow: 'hidden'
+        boxShadow: '0 40px 100px rgba(0,0,0,0.04)',
+        overflow: 'visible',
       }}>
-        <div style={{ padding: '60px 80px 40px' }}>
-          <div className="badge-mini" style={{ background: 'rgba(45, 90, 39, 0.1)', color: 'var(--clr-moss-500)' }}>Property Intelligence</div>
-          <h3 style={{ fontSize: '42px', fontWeight: 800, marginBottom: '16px', color: 'var(--clr-text-main)' }}>Valuation Wizard.</h3>
-          <p style={{ fontSize: '16px', color: 'var(--clr-text-muted)', maxWidth: '500px', lineHeight: 1.6 }}>
-            Benchmark your property against verified market signals for a trust-first decision.
-          </p>
+        {/* Header */}
+        <div style={{ padding: '60px 72px 40px' }}>
+          <div className="badge-mini" style={{ background: 'rgba(45,90,39,0.04)', color: 'var(--clr-moss-500)', border: '1px solid rgba(45,90,39,0.08)' }}>Property Intelligence</div>
+          <h3 style={{ fontSize: '44px', fontWeight: 900, color: '#111', letterSpacing: '-0.03em', margin: '16px 0 8px' }}>Valuation Wizard.</h3>
+          <p style={{ fontSize: '16px', color: 'rgba(0,0,0,0.5)', fontWeight: 600 }}>Benchmark your property against verified market signals.</p>
+
+          {/* Step pills */}
+          <div style={{ display: 'flex', gap: '8px', marginTop: '36px', flexWrap: 'wrap' }}>
+            {STEP_TITLES.map((s, i) => {
+              const n = i + 1;
+              const done = step > n;
+              const active = step === n;
+              return (
+                <div key={n} style={{
+                  display: 'flex', alignItems: 'center', gap: '8px',
+                  padding: '8px 16px', borderRadius: '10px',
+                  background: active ? '#111' : done ? 'var(--clr-moss-500)' : 'rgba(0,0,0,0.04)',
+                  color: active || done ? '#fff' : 'rgba(0,0,0,0.3)',
+                  fontSize: '11px', fontWeight: 800, letterSpacing: '0.5px',
+                  transition: 'all 0.3s',
+                }}>
+                  <span>{s.n}</span><span>{s.label}</span>
+                </div>
+              );
+            })}
+          </div>
         </div>
 
-        <div style={{ padding: '0 80px 80px' }}>
-          <div style={{ display: 'flex', gap: '40px', flexWrap: 'wrap', marginBottom: '60px', borderBottom: '1px solid rgba(0,0,0,0.05)', paddingBottom: '30px' }}>
-            <StepBadge n="01" label="LOCATION" active={currentStep === 1} done={currentStep > 1} />
-            <StepBadge n="02" label="ASSET" active={currentStep === 2} done={currentStep > 2} />
-            <StepBadge n="03" label="SPECS" active={currentStep === 3} done={currentStep > 3} />
-            <StepBadge n="04" label="FINALIZE" active={currentStep === 4} done={currentStep > 4} />
-          </div>
+        {/* Step Content */}
+        <div style={{ padding: '0 72px 60px' }}>
 
-          <form onSubmit={handleSubmit}>
-            {currentStep === 1 && (
-              <div className="form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px' }}>
-                <div className="form-field">
-                  <label className="form-label" style={{ fontSize: '12px', fontWeight: 800, color: 'var(--clr-text-main)', marginBottom: '12px', display: 'block' }}>State *</label>
-                  <SearchableSelect options={STATES} value={form.state} onChange={e => setField('state', e.target.value)} placeholder="Search state..." error={errors.state} />
-                  <FieldError msg={errors.state} />
-                </div>
-                <div className="form-field">
-                  <label className="form-label" style={{ fontSize: '12px', fontWeight: 800, color: 'var(--clr-text-main)', marginBottom: '12px', display: 'block' }}>City *</label>
-                  <SearchableSelect options={cities} value={form.city} onChange={e => setField('city', e.target.value)} placeholder="Search city..." disabled={!form.state} error={errors.city} />
-                  <FieldError msg={errors.city} />
-                </div>
-                <div className="form-field">
-                  <label className="form-label" style={{ fontSize: '12px', fontWeight: 800, color: 'var(--clr-text-main)', marginBottom: '12px', display: 'block' }}>Locality *</label>
-                  <SearchableSelect options={localities} value={form.locality} onChange={e => setField('locality', e.target.value)} placeholder="Search locality..." disabled={!form.city} error={errors.locality} />
-                  <FieldError msg={errors.locality} />
-                </div>
-                <div className="form-field">
-                  <label className="form-label" style={{ fontSize: '12px', fontWeight: 800, color: 'var(--clr-text-main)', marginBottom: '12px', display: 'block' }}>Locality Demand *</label>
-                  <SearchableSelect options={DEMAND_LEVELS} value={form.localityDemand} onChange={e => setField('localityDemand', e.target.value)} placeholder="Select demand level..." />
-                </div>
+          {/* ── STEP 1: Location ── */}
+          {step === 1 && (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '28px' }}>
+              <div style={{ gridColumn: '1/-1' }}>
+                <Label>City *</Label>
+                <SearchableSelect
+                  options={CITIES}
+                  value={form.city}
+                  onChange={e => set('city', e.target.value)}
+                  placeholder="Search city..."
+                  error={errors.city}
+                />
+                <FieldError msg={errors.city} />
               </div>
-            )}
-
-            {currentStep === 2 && (
-              <div className="form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px' }}>
-                <div className="form-field" style={{ gridColumn: 'span 2' }}>
-                  <label className="form-label" style={{ fontSize: '12px', fontWeight: 800, color: 'var(--clr-text-main)', marginBottom: '12px', display: 'block' }}>Society / Project Name *</label>
-                  <input type="text" className="form-input" style={{ padding: '14px 18px', borderRadius: '4px', border: '1px solid rgba(0,0,0,0.1)', width: '100%', fontSize: '14px' }} placeholder="e.g. Prestige Heights" value={form.societyName} onChange={e => setField('societyName', e.target.value)} />
-                </div>
-                <div className="form-field">
-                  <label className="form-label" style={{ fontSize: '12px', fontWeight: 800, color: 'var(--clr-text-main)', marginBottom: '12px', display: 'block' }}>Property Type *</label>
-                  <SearchableSelect options={PROPERTY_TYPES} value={form.propertyType} onChange={e => setField('propertyType', e.target.value)} placeholder="Select type..." error={errors.propertyType} />
-                  <FieldError msg={errors.propertyType} />
-                </div>
+              <div style={{ gridColumn: '1/-1' }}>
+                <Label>Area / Zone (optional)</Label>
+                <GlassInput placeholder="e.g. Koramangala, Baner, Sector 62..." value={form.area_name} onChange={e => set('area_name', e.target.value)} />
               </div>
-            )}
-
-            {currentStep === 3 && <TypeSpecFields form={form} errors={errors} setField={setField} />}
-
-            {currentStep === 4 && (
-              <div className="form-field">
-                <label className="form-label" style={{ fontSize: '12px', fontWeight: 800, color: 'var(--clr-text-main)', marginBottom: '12px', display: 'block' }}>Broker Quote (₹)</label>
-                <input type="number" className="form-input" style={{ padding: '14px 18px', borderRadius: '4px', border: '1px solid rgba(0,0,0,0.1)', width: '100%', fontSize: '14px' }} placeholder="e.g. 15000000" value={form.brokerQuote} onChange={e => setField('brokerQuote', e.target.value)} />
-              </div>
-            )}
-
-            <PropertyCardPreview form={form} />
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '60px', borderTop: '1px solid rgba(0,0,0,0.05)', paddingTop: '40px' }}>
-              {currentStep > 1 ? (
-                <button type="button" onClick={handlePrevStep} style={{ padding: '12px 24px', border: 'none', background: 'transparent', fontWeight: 800, cursor: 'pointer', fontSize: '13px' }}>Back</button>
-              ) : (
-                <button type="button" onClick={() => setForm(DEFAULT_FORM)} style={{ padding: '12px 24px', border: 'none', background: 'transparent', color: 'var(--clr-text-muted)', fontWeight: 800, cursor: 'pointer', fontSize: '13px' }}>Reset</button>
-              )}
-              
-              <button type="submit" className="btn-auth">
-                {currentStep < 4 ? 'Next Step' : 'Run Intelligence Engine'} <ArrowRight size={18} />
-              </button>
             </div>
-          </form>
+          )}
+
+          {/* ── STEP 2: Property Type + Direction + Colony ── */}
+          {step === 2 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
+              <div>
+                <Label>Property Type *</Label>
+                <CheckGroup items={PROPERTY_TYPES} selected={form.propertyType ? [form.propertyType] : []} onChange={arr => set('propertyType', arr[arr.length - 1] || '')} />
+                <FieldError msg={errors.propertyType} />
+              </div>
+              <div>
+                <Label>Facing Direction *</Label>
+                <CheckGroup items={DIRECTIONS} selected={form.facing ? [form.facing] : []} onChange={arr => set('facing', arr[arr.length - 1] || '')} />
+                <FieldError msg={errors.facing} />
+              </div>
+              <div>
+                <Label>Colony / Locality Name *</Label>
+                <GlassInput placeholder="e.g. Anand Nagar, DLF Phase 2..." value={form.colony} onChange={e => set('colony', e.target.value)} />
+                <FieldError msg={errors.colony} />
+              </div>
+            </div>
+          )}
+
+          {/* ── STEP 3: Conditional Specs ── */}
+          {step === 3 && (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '28px' }}>
+
+              {/* FLAT */}
+              {pt === 'Flat' && (<>
+                <div>
+                  <Label>BHK *</Label>
+                  <SearchableSelect options={['1','2','3','4','5','6']} value={form.bhk} onChange={e => set('bhk', e.target.value)} placeholder="Select BHK" error={errors.bhk} />
+                  <FieldError msg={errors.bhk} />
+                </div>
+                <div>
+                  <Label>Floor Number *</Label>
+                  <GlassInput placeholder="e.g. 5" value={form.floorNo} onChange={e => set('floorNo', sanitizeNum(e.target.value))} />
+                  <FieldError msg={errors.floorNo} />
+                </div>
+                <div>
+                  <Label>Total Floors *</Label>
+                  <GlassInput placeholder="e.g. 20" value={form.totalFloors} onChange={e => set('totalFloors', sanitizeNum(e.target.value))} />
+                  <FieldError msg={errors.totalFloors} />
+                </div>
+                <div>
+                  <Label>Area (sq ft) *</Label>
+                  <GlassInput placeholder="e.g. 1200" value={form.area} onChange={e => set('area', sanitizeNum(e.target.value))} />
+                  <FieldError msg={errors.area} />
+                </div>
+                <div>
+                  <Label>Age of Property (yrs) *</Label>
+                  <GlassInput placeholder="e.g. 3" value={form.age} onChange={e => set('age', sanitizeNum(e.target.value))} />
+                  <FieldError msg={errors.age} />
+                </div>
+                <div>
+                  <Label>Furnishing Status *</Label>
+                  <SearchableSelect options={FURNISHING} value={form.furnished} onChange={e => set('furnished', e.target.value)} placeholder="Select..." error={errors.furnished} />
+                  <FieldError msg={errors.furnished} />
+                </div>
+                <div style={{ gridColumn: '1/-1' }}>
+                  <Label>Parking</Label>
+                  <CheckGroup items={['Yes']} selected={form.parking ? ['Yes'] : []} onChange={arr => set('parking', arr.includes('Yes'))} />
+                </div>
+              </>)}
+
+              {/* INDEPENDENT HOUSE / VILLA */}
+              {(pt === 'Independent House' || pt === 'Villa') && (<>
+                <div>
+                  <Label>BHK *</Label>
+                  <SearchableSelect options={['1','2','3','4','5','6']} value={form.bhk} onChange={e => set('bhk', e.target.value)} placeholder="Select BHK" error={errors.bhk} />
+                  <FieldError msg={errors.bhk} />
+                </div>
+                <div>
+                  <Label>Plot Area (sq ft) *</Label>
+                  <GlassInput placeholder="e.g. 2400" value={form.plotArea} onChange={e => set('plotArea', sanitizeNum(e.target.value))} />
+                  <FieldError msg={errors.plotArea} />
+                </div>
+                <div>
+                  <Label>Built-up Area (sq ft) *</Label>
+                  <GlassInput placeholder="e.g. 1800" value={form.builtupArea} onChange={e => set('builtupArea', sanitizeNum(e.target.value))} />
+                  <FieldError msg={errors.builtupArea} />
+                </div>
+                <div>
+                  <Label>Number of Floors</Label>
+                  <GlassInput placeholder="e.g. 2" value={form.floors} onChange={e => set('floors', sanitizeNum(e.target.value))} />
+                </div>
+                <div>
+                  <Label>Age of Property (yrs) *</Label>
+                  <GlassInput placeholder="e.g. 5" value={form.age} onChange={e => set('age', sanitizeNum(e.target.value))} />
+                  <FieldError msg={errors.age} />
+                </div>
+                <div style={{ gridColumn: '1/-1', display: 'flex', gap: '16px' }}>
+                  <div style={{ flex: 1 }}>
+                    <Label>Parking</Label>
+                    <CheckGroup items={['Yes']} selected={form.parking ? ['Yes'] : []} onChange={arr => set('parking', arr.includes('Yes'))} />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <Label>Garden / Terrace</Label>
+                    <CheckGroup items={['Yes']} selected={form.garden ? ['Yes'] : []} onChange={arr => set('garden', arr.includes('Yes'))} />
+                  </div>
+                </div>
+              </>)}
+
+              {/* PLOT */}
+              {pt === 'Plot' && (<>
+                <div>
+                  <Label>Plot Area (sq ft) *</Label>
+                  <GlassInput placeholder="e.g. 3000" value={form.plotArea} onChange={e => set('plotArea', sanitizeNum(e.target.value))} />
+                  <FieldError msg={errors.plotArea} />
+                </div>
+                <div>
+                  <Label>Dimensions (optional)</Label>
+                  <GlassInput placeholder="e.g. 40×75 ft" value={form.dimensions} onChange={e => set('dimensions', e.target.value)} />
+                </div>
+                <div style={{ gridColumn: '1/-1' }}>
+                  <Label>Corner Plot?</Label>
+                  <CheckGroup items={['Yes — Corner Plot']} selected={form.cornerPlot ? ['Yes — Corner Plot'] : []} onChange={arr => set('cornerPlot', arr.includes('Yes — Corner Plot'))} />
+                </div>
+              </>)}
+
+              {/* COMMERCIAL */}
+              {pt === 'Commercial' && (<>
+                <div>
+                  <Label>Total Area (sq ft) *</Label>
+                  <GlassInput placeholder="e.g. 800" value={form.totalArea} onChange={e => set('totalArea', sanitizeNum(e.target.value))} />
+                  <FieldError msg={errors.totalArea} />
+                </div>
+                <div>
+                  <Label>Floor Number</Label>
+                  <GlassInput placeholder="e.g. Ground, 1, 2..." value={form.floorNo} onChange={e => set('floorNo', e.target.value)} />
+                </div>
+                <div>
+                  <Label>Usage Type *</Label>
+                  <SearchableSelect options={USAGE_TYPES} value={form.usageType} onChange={e => set('usageType', e.target.value)} placeholder="Select..." error={errors.usageType} />
+                  <FieldError msg={errors.usageType} />
+                </div>
+                <div>
+                  <Label>Parking</Label>
+                  <CheckGroup items={['Yes']} selected={form.parking ? ['Yes'] : []} onChange={arr => set('parking', arr.includes('Yes'))} />
+                </div>
+              </>)}
+            </div>
+          )}
+
+          {/* ── STEP 4: Amenities + Nearby ── */}
+          {step === 4 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '36px' }}>
+              <div>
+                <Label>Amenities Available</Label>
+                <CheckGroup items={AMENITIES_LIST} selected={form.amenities} onChange={v => set('amenities', v)} />
+              </div>
+              <div>
+                <Label>Nearby Facilities</Label>
+                <CheckGroup items={NEARBY_LIST} selected={form.nearby} onChange={v => set('nearby', v)} />
+              </div>
+            </div>
+          )}
+
+          {/* ── STEP 5: Confirm & Predict ── */}
+          {step === 5 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              <div style={{ padding: '32px', borderRadius: '20px', background: 'rgba(45,90,39,0.04)', border: '1px solid rgba(45,90,39,0.08)' }}>
+                <div style={{ fontSize: '12px', fontWeight: 900, color: 'var(--clr-moss-500)', letterSpacing: '2px', marginBottom: '20px' }}>PROPERTY SUMMARY</div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '20px' }}>
+                  {[
+                    ['City', form.city],
+                    ['Type', form.propertyType],
+                    ['Facing', form.facing],
+                    ['Colony', form.colony],
+                    ['BHK', form.bhk || '—'],
+                    ['Area', `${form.area || form.plotArea || form.totalArea || form.builtupArea || '—'} sq ft`],
+                    ['Age', form.age ? `${form.age} yrs` : '—'],
+                    ['Amenities', `${form.amenities.length} selected`],
+                    ['Nearby', `${form.nearby.length} selected`],
+                  ].map(([k, v]) => (
+                    <div key={k}>
+                      <div style={{ fontSize: '10px', fontWeight: 800, color: 'rgba(0,0,0,0.35)', marginBottom: '4px' }}>{k.toUpperCase()}</div>
+                      <div style={{ fontSize: '15px', fontWeight: 800, color: '#111' }}>{v || '—'}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <p style={{ fontSize: '14px', color: 'rgba(0,0,0,0.45)', fontWeight: 600, textAlign: 'center' }}>
+                Our ML ensemble will predict your property's fair market price with confidence scoring.
+              </p>
+            </div>
+          )}
+
+          {/* Navigation Buttons */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '48px' }}>
+            <button
+              onClick={back}
+              disabled={step === 1}
+              className="btn-auth"
+              style={{ opacity: step === 1 ? 0 : 1, pointerEvents: step === 1 ? 'none' : 'auto' }}
+            >
+              <ChevronLeft size={16} /> Back
+            </button>
+
+            {step < 5 ? (
+              <button onClick={next} className="btn-auth" style={{ background: '#111', color: '#fff', border: 'none' }}>
+                Continue <ChevronRight size={16} />
+              </button>
+            ) : (
+              <button onClick={submit} className="btn-auth" style={{ background: 'var(--clr-moss-500)', color: '#fff', border: 'none', padding: '18px 48px' }}>
+                <Zap size={16} /> Run Valuation
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>

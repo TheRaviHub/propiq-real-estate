@@ -360,7 +360,13 @@ const Hero = ({ onStart }) => {
           <span style={{ cursor: 'pointer' }} onClick={() => scrollToSection('contact')}>Contact</span>
         </div>
         <div>
-          <button className="btn-auth" style={{ padding: '12px 24px' }} onClick={onStart}>Get Started</button>
+          <button className="btn-auth" style={{ 
+            padding: '12px 24px', 
+            background: 'rgba(255, 255, 255, 0.1)',
+            backdropFilter: 'blur(20px)',
+            color: '#000',
+            border: '1px solid rgba(0,0,0,0.05)'
+          }} onClick={onStart}>Get Started</button>
         </div>
       </nav>
 
@@ -406,7 +412,15 @@ const Hero = ({ onStart }) => {
           We provide RERA-verified, street-level insights powered by ensemble machine learning.
         </p>
 
-        <button className="btn-auth" style={{ marginBottom: '40px', padding: '20px 48px', fontSize: '18px' }} onClick={onStart}>
+        <button className="btn-auth" style={{ 
+          marginBottom: '40px', 
+          padding: '20px 48px', 
+          fontSize: '18px',
+          background: 'rgba(45, 90, 39, 0.1)', 
+          backdropFilter: 'blur(25px)',
+          border: '1px solid rgba(45, 90, 39, 0.2)',
+          color: 'var(--clr-moss-500)'
+        }} onClick={onStart}>
           Start Free Valuation <ArrowRight size={22} />
         </button>
 
@@ -519,13 +533,31 @@ const Hero = ({ onStart }) => {
         
         {/* Contact Buttons */}
         <div style={{ display: 'flex', justifyContent: 'center', gap: '24px', flexWrap: 'wrap', marginBottom: '100px' }}>
-          <button className="btn-auth contact-btn-glow" style={{ background: '#fff', color: '#000', border: '1px solid rgba(0,0,0,0.1)', padding: '18px 40px' }} onClick={() => window.location.href = 'mailto:onlyravi4321@gmail.com'}>
+          <button className="btn-auth contact-btn-glow" style={{ 
+            background: 'rgba(255, 255, 255, 0.1)', 
+            color: '#000', 
+            border: '1px solid rgba(0,0,0,0.1)', 
+            padding: '18px 40px',
+            backdropFilter: 'blur(20px)'
+          }} onClick={() => window.location.href = 'mailto:onlyravi4321@gmail.com'}>
             <Mail size={22} /> Gmail
           </button>
-          <button className="btn-auth contact-btn-glow" style={{ padding: '18px 40px' }} onClick={() => window.open('https://github.com/TheRaviHub', '_blank')}>
+          <button className="btn-auth contact-btn-glow" style={{ 
+            padding: '18px 40px',
+            background: 'rgba(0, 0, 0, 0.05)',
+            border: '1px solid rgba(0,0,0,0.1)',
+            backdropFilter: 'blur(20px)',
+            color: '#000'
+          }} onClick={() => window.open('https://github.com/TheRaviHub', '_blank')}>
             <Github size={22} /> GitHub
           </button>
-          <button className="btn-auth contact-btn-glow" style={{ background: '#0077b5', border: 'none', padding: '18px 40px' }} onClick={() => window.open('https://www.linkedin.com/in/ravi-kumar-singh-3a0157397/', '_blank')}>
+          <button className="btn-auth contact-btn-glow" style={{ 
+            background: 'rgba(0, 119, 181, 0.1)', 
+            border: '1px solid rgba(0, 119, 181, 0.2)', 
+            padding: '18px 40px',
+            backdropFilter: 'blur(20px)',
+            color: '#0077b5'
+          }} onClick={() => window.open('https://www.linkedin.com/in/ravi-kumar-singh-3a0157397/', '_blank')}>
             <Linkedin size={22} /> LinkedIn
           </button>
         </div>

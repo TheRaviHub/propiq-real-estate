@@ -60,32 +60,34 @@ export const CITY_CONST_MULT = {
 // ── Core Engine ───────────────────────────────────────────────────────────────
 export async function runMLEngine(inputs) {
   let estimatedPrice = null;
+  let priceRangeLow  = null;
+  let priceRangeHigh = null;
   let confidenceScore = null;
   let featureImportance = [];
   let metrics = null;
   let backendUsed = false;
 
-  // 1. Map form fields to backend schema (exact match with train_model.py)
+  // 1. Map all 5-step form fields to v4.0 backend schema
   const cityData = CITY_METRICS[inputs.city] || CITY_METRICS['Other'];
+
   const payload = {
-    city:                 inputs.city        || 'Other',
-    locality:             inputs.locality    || 'Other',
-    propertyType:         inputs.propertyType,
-    area:                 Number(inputs.area) || 1000,
-    bhk:                  Number(inputs.bhk)  || 0,
-    bathrooms:            Number(inputs.bathrooms) || 0,
-    age:                  Number(inputs.age)  || 0,
-    furnished:            inputs.furnished   || 'Unfurnished',
-    facing:               inputs.facing      || 'North',
-    gatedSociety:         !!inputs.gatedSociety,
-    parking:              !!inputs.parking,
-    // Enrichment — if not available from form, omit so backend fills from city metrics
-    metro_dist:           inputs.metro_dist    ? Number(inputs.metro_dist)    : undefined,
-    school_dist:          inputs.school_dist   ? Number(inputs.school_dist)   : undefined,
-    hospital_dist:        inputs.hospital_dist ? Number(inputs.hospital_dist) : undefined,
+    city:           inputs.city       || 'Other',
+    locality:       inputs.locality   || 'Other',
+    propertyType:   inputs.propertyType || 'Apartment',
+    area:           Number(inputs.area) || 1000,
+    bhk:            Number(inputs.bhk) || 0,
+    age:            Number(inputs.age) || 0,
+    furnished:      inputs.furnished  || 'Unfurnished',
+    facing:         inputs.facing     || 'North',
+    parking:        !!inputs.parking,
+    amenityScore:   Number(inputs.amenityScore)  || 0,
+    nearbySchool:   !!inputs.nearbySchool,
+    nearbyHospital: !!inputs.nearbyHospital,
+    nearbyMetro:    !!inputs.nearbyMetro,
+    floorNo:        Number(inputs.floorNo)    || 0,
+    totalFloors:    Number(inputs.totalFloors) || 1,
+    isCornerPlot:   !!inputs.isCornerPlot,
   };
-  // Strip undefined keys so backend uses its defaults
-  Object.keys(payload).forEach(k => payload[k] === undefined && delete payload[k]);
 
   // 2. Try backend
   try {
@@ -100,45 +102,45 @@ export async function runMLEngine(inputs) {
     clearTimeout(timeout);
     if (res.ok) {
       const data = await res.json();
-      estimatedPrice   = data.estimatedPrice;
-      confidenceScore  = data.confidenceScore;
+      estimatedPrice    = data.estimatedPrice;
+      priceRangeLow     = data.price_range_low;
+      priceRangeHigh    = data.price_range_high;
+      confidenceScore   = data.confidenceScore;
       featureImportance = data.featureImportance;
-      metrics = data.metrics;
+      metrics           = data.metrics;
       backendUsed = true;
-      console.log(`✅ ML Backend: ₹${(estimatedPrice/1e5).toFixed(2)}L | Conf: ${confidenceScore}%`);
+      console.log(`✅ ML Backend v4.0: ₹${(estimatedPrice/1e5).toFixed(2)}L | Conf: ${confidenceScore}%`);
     } else {
       const err = await res.json().catch(() => ({}));
-      console.warn(`⚠️ Backend returned ${res.status}:`, err.detail || err);
+      console.warn(`⚠️ Backend ${res.status}:`, err.detail || err);
     }
   } catch (err) {
-    if (err.name === 'AbortError') {
-      console.warn('⚠️ Backend timeout (12s). Using fallback.');
-    } else {
-      console.warn('⚠️ Backend offline. Using fallback.');
-    }
+    console.warn(err.name === 'AbortError' ? '⚠️ Backend timeout.' : '⚠️ Backend offline. Using fallback.');
   }
 
-  // 3. Heuristic fallback (if backend unavailable)
+  // 3. Heuristic fallback
   if (!backendUsed) {
-    const area        = Number(inputs.area) || 1000;
-    const age         = Number(inputs.age)  || 0;
-    const demandMult  = DEMAND_MULT[inputs.localityDemand] || 1.0;
-    const typeMult    = PROP_TYPE_MULT[inputs.propertyType] || 1.0;
-    const ageMult     = age <= 5 ? 1.02 : Math.max(0.60, 1.0 - age * 0.011);
-    const furnMult    = inputs.furnished === 'Fully Furnished' ? 1.08 : inputs.furnished === 'Semi-Furnished' ? 1.03 : 1.0;
-    const infraMult   = 1.0 + (cityData.infra - 65) / 250;
-    const gateMult    = inputs.gatedSociety ? 1.04 : 1.0;
-    const parkMult    = inputs.parking ? 1.03 : 1.0;
+    const area       = Number(inputs.area) || 1000;
+    const age        = Number(inputs.age)  || 0;
+    const typeMult   = PROP_TYPE_MULT[inputs.propertyType] || 1.0;
+    const ageMult    = age <= 5 ? 1.02 : Math.max(0.60, 1.0 - age * 0.011);
+    const furnMult   = inputs.furnished === 'Fully Furnished' ? 1.08 : inputs.furnished === 'Semi-Furnished' ? 1.03 : 1.0;
+    const infraMult  = 1.0 + (cityData.infra - 65) / 250;
+    const nearbyMult = 1.0 + (inputs.amenityScore || 0) * 0.06 +
+      (inputs.nearbyMetro ? 0.05 : 0) + (inputs.nearbyHospital ? 0.02 : 0) + (inputs.nearbySchool ? 0.02 : 0);
+    const parkMult   = inputs.parking ? 1.03 : 1.0;
 
-    const psf = cityData.base * typeMult * demandMult * ageMult * furnMult * infraMult * gateMult * parkMult;
+    const psf = cityData.base * typeMult * ageMult * furnMult * infraMult * nearbyMult * parkMult;
     estimatedPrice  = Math.round(psf * area);
-    confidenceScore = 71.0;
+    priceRangeLow   = Math.round(estimatedPrice * 0.91);
+    priceRangeHigh  = Math.round(estimatedPrice * 1.10);
+    confidenceScore = 68.0;
     metrics = { infra_score: cityData.infra, crime_index: cityData.crime, trend_index: cityData.trend };
     featureImportance = [
       { name: 'Location & Demand',      value: 38.0, positive: true },
       { name: 'Property Size (Area)',   value: 26.0, positive: true },
       { name: 'Infrastructure & Metro', value: 14.0, positive: true },
-      { name: 'Age & Condition',        value: 12.0, positive: inputs.age < 10 },
+      { name: 'Age & Condition',        value: 12.0, positive: age < 10 },
       { name: 'BHK & Configuration',   value:  7.0, positive: true },
       { name: 'Amenities & Safety',     value:  3.0, positive: true },
     ];
@@ -183,8 +185,8 @@ export async function runMLEngine(inputs) {
 
   return {
     estimatedPrice,
-    priceMin,
-    priceMax,
+    priceMin:          priceRangeLow  || Math.round(estimatedPrice * 0.91),
+    priceMax:          priceRangeHigh || Math.round(estimatedPrice * 1.10),
     pricePerSqft:      Math.round(estimatedPrice / (Number(inputs.area) || 1)),
     confidenceScore,
     demandScore:       localityDemandIndex,
@@ -200,7 +202,7 @@ export async function runMLEngine(inputs) {
     featureImportance,
     comps:             _generateComparables(inputs.locality, estimatedPrice, inputs.bhk, inputs.area, inputs.city),
     inputs,
-    predictionSource:  backendUsed ? 'Ensemble ML (GBM + RF) — PropIQ v3.0' : 'Heuristic Engine (Offline Fallback)',
+    predictionSource:  backendUsed ? 'Ensemble ML (GBM + RF) — PropIQ v4.0' : 'Heuristic Engine (Offline Fallback)',
     metrics,
   };
 }
