@@ -1,627 +1,432 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { ArrowRight, Shield, Globe, Database, Zap, Cpu, Mail, Github, TrendingUp, Search, BarChart, MapPin, Plus, Layers, Network, Terminal, Settings, CheckCircle, Linkedin } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { ArrowRight, BarChart3, ShieldCheck, Zap, Target, Globe, Cpu, TrendingUp, Home, Brain } from 'lucide-react';
 
-const ServicePill = ({ icon: Icon, label, delay }) => (
-  <div className="service-pill" style={{ 
-    animation: `riseUp 0.8s cubic-bezier(0.23, 1, 0.32, 1) forwards`,
-    animationDelay: `${delay}s`,
-    opacity: 0,
-    transform: 'translateY(30px)'
-  }}>
-    <Icon size={16} color="var(--clr-moss-500)" />
-    <span>{label}</span>
-  </div>
-);
-
-const SignalSphere = ({ scrollY }) => (
-  <div style={{ 
-    position: 'absolute', 
-    top: '150px', 
-    left: '50%', 
-    transform: `translateX(-50%) translateY(${scrollY * 0.2}px)`, 
-    zIndex: 2,
-    opacity: 0.15,
-    pointerEvents: 'none'
-  }}>
-    <div style={{
-      width: '600px', height: '600px', borderRadius: '50%',
-      background: 'radial-gradient(circle at center, rgba(0, 255, 0, 0.15) 0%, transparent 70%)',
-      display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gridTemplateRows: 'repeat(12, 1fr)',
-      padding: '40px', gap: '12px'
-    }}>
-      {Array.from({ length: 144 }).map((_, i) => (
-        <div key={i} style={{ 
-          width: '4px', height: '4px', borderRadius: '50%', 
-          background: i % 7 === 0 ? 'var(--clr-moss-500)' : '#ddd',
-          boxShadow: i % 7 === 0 ? '0 0 10px var(--clr-moss-500)' : 'none'
-        }} />
-      ))}
-    </div>
-  </div>
-);
-
-const CityCard = ({ name, desc, isMore, onClick }) => {
-  const [hovered, setHovered] = useState(false);
-  
-  return (
-    <div 
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      onClick={onClick}
-      style={{ 
-        padding: '48px', 
-        borderRadius: '24px', 
-        background: hovered ? 'linear-gradient(135deg, #f9fbf8 0%, #e8f0e6 100%)' : '#fff',
-        border: hovered ? '2px solid var(--clr-moss-500)' : '1px solid rgba(0,0,0,0.06)',
-        textAlign: 'left',
-        transition: 'all 0.5s cubic-bezier(0.23, 1, 0.32, 1)',
-        position: 'relative',
-        overflow: 'hidden',
-        boxShadow: hovered ? '0 20px 40px rgba(45, 90, 39, 0.1)' : 'none',
-        transform: hovered ? 'translateY(-12px) scale(1.02)' : 'translateY(0) scale(1)',
-        cursor: 'pointer',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: isMore ? 'center' : 'flex-start',
-        alignItems: isMore ? 'center' : 'flex-start'
-      }}
-    >
-      <div style={{ 
-        width: '40px', 
-        height: '40px', 
-        borderRadius: '10px', 
-        background: hovered ? 'var(--clr-moss-500)' : 'rgba(0,0,0,0.03)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginBottom: isMore ? '16px' : '24px',
-        transition: 'all 0.3s ease',
-        transform: hovered ? 'translateY(-4px)' : 'translateY(0)'
-      }}>
-        {isMore ? <Plus size={20} color={hovered ? '#fff' : 'var(--clr-moss-500)'} /> : <MapPin size={20} color={hovered ? '#fff' : 'var(--clr-moss-500)'} />}
-      </div>
-      
-      <h3 style={{ 
-        fontSize: isMore ? '22px' : '26px', 
-        fontWeight: 900, 
-        marginBottom: isMore ? '0' : '12px',
-        color: hovered ? 'var(--clr-moss-500)' : '#000',
-        transition: 'all 0.3s ease',
-        textAlign: isMore ? 'center' : 'left',
-        transform: hovered ? 'translateY(-2px)' : 'translateY(0)'
-      }}>
-        {name}
-      </h3>
-      
-      {!isMore && (
-        <p style={{ 
-          fontSize: '15px', 
-          color: 'rgba(0,0,0,0.5)', 
-          fontWeight: 600,
-          lineHeight: 1.4
-        }}>
-          {desc}
-        </p>
-      )}
-
-      {/* Subtle Glow Effect */}
-      {hovered && (
-        <div style={{
-          position: 'absolute',
-          bottom: '-20px',
-          right: '-20px',
-          width: '100px',
-          height: '100px',
-          background: 'var(--clr-moss-500)',
-          filter: 'blur(40px)',
-          opacity: 0.15,
-          zIndex: -1
-        }} />
-      )}
-    </div>
-  );
-};
-
-const IntelCard = ({ icon: Icon, title, desc, delay }) => {
-  const [hovered, setHovered] = useState(false);
-  
-  return (
-    <div 
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{ 
-        textAlign: 'left', 
-        padding: '40px', 
-        background: hovered ? 'linear-gradient(135deg, #f9fbf8 0%, #e8f0e6 100%)' : '#fff', 
-        borderRadius: '24px', 
-        border: hovered ? '2px solid var(--clr-moss-500)' : '1px solid rgba(0,0,0,0.05)',
-        transition: 'all 0.5s cubic-bezier(0.23, 1, 0.32, 1)',
-        transform: hovered ? 'translateY(-12px) scale(1.02)' : 'translateY(0) scale(1)',
-        boxShadow: hovered ? '0 20px 40px rgba(45, 90, 39, 0.1)' : 'none',
-        opacity: 0,
-        animation: `riseUp 0.8s cubic-bezier(0.23, 1, 0.32, 1) forwards`,
-        animationDelay: `${delay}s`,
-        position: 'relative',
-        overflow: 'hidden',
-        cursor: 'pointer'
-      }}
-    >
-      <div style={{ 
-        width: 48, height: 48, borderRadius: '12px', 
-        background: hovered ? 'var(--clr-moss-500)' : 'rgba(45, 90, 39, 0.1)', 
-        display: 'flex', alignItems: 'center', justifyContent: 'center', 
-        marginBottom: '24px',
-        transition: 'all 0.3s ease',
-        transform: hovered ? 'translateY(-4px)' : 'translateY(0)'
-      }}>
-        <Icon color={hovered ? '#fff' : 'var(--clr-moss-500)'} size={24} />
-      </div>
-      <h4 style={{ 
-        fontSize: '22px', 
-        fontWeight: 900, 
-        marginBottom: '16px', 
-        color: hovered ? 'var(--clr-moss-500)' : '#000', 
-        transition: 'all 0.3s ease',
-        transform: hovered ? 'translateY(-2px)' : 'translateY(0)'
-      }}>{title}</h4>
-      <p style={{ fontSize: '16px', color: 'rgba(0,0,0,0.5)', fontWeight: 500, lineHeight: 1.6 }}>{desc}</p>
-      
-      {/* Subtle Glow Effect */}
-      {hovered && (
-        <div style={{
-          position: 'absolute',
-          bottom: '-20px',
-          right: '-20px',
-          width: '100px',
-          height: '100px',
-          background: 'var(--clr-moss-500)',
-          filter: 'blur(40px)',
-          opacity: 0.15,
-          zIndex: -1
-        }} />
-      )}
-    </div>
-  );
-};
-
-const PipelineStep = ({ icon: Icon, title, desc, stepNum, delay }) => {
-  const [hovered, setHovered] = useState(false);
-  return (
-    <div 
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{ 
-        flex: 1, 
-        minWidth: '250px', 
-        position: 'relative',
-        opacity: 0,
-        animation: `riseUp 0.8s cubic-bezier(0.23, 1, 0.32, 1) forwards`,
-        animationDelay: `${delay}s`,
-        padding: '32px',
-        background: hovered ? 'linear-gradient(135deg, #f9fbf8 0%, #e8f0e6 100%)' : '#fff',
-        borderRadius: '24px',
-        border: hovered ? '2px solid var(--clr-moss-500)' : '1px solid rgba(0,0,0,0.04)',
-        textAlign: 'center',
-        boxShadow: hovered ? '0 20px 40px rgba(45, 90, 39, 0.1)' : '0 4px 20px rgba(0,0,0,0.02)',
-        transition: 'all 0.5s cubic-bezier(0.23, 1, 0.32, 1)',
-        transform: hovered ? 'translateY(-12px) scale(1.02)' : 'translateY(0) scale(1)',
-        cursor: 'pointer',
-        overflow: 'hidden'
-      }}
-    >
-      <div style={{ 
-        width: '32px', height: '32px', borderRadius: '50%', background: hovered ? '#111' : 'var(--clr-moss-500)', 
-        color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: '12px', fontWeight: 900, margin: '0 auto 20px',
-        transition: 'all 0.3s ease',
-        transform: hovered ? 'translateY(-4px)' : 'translateY(0)'
-      }}>
-        {stepNum}
-      </div>
-      <div style={{ 
-        marginBottom: '16px', 
-        color: hovered ? '#000' : 'var(--clr-moss-500)', 
-        transition: 'all 0.3s ease',
-        transform: hovered ? 'translateY(-2px)' : 'translateY(0)'
-      }}>
-        <Icon size={32} />
-      </div>
-      <h5 style={{ fontSize: '18px', fontWeight: 900, marginBottom: '8px', color: hovered ? 'var(--clr-moss-500)' : '#000', transition: 'all 0.3s ease' }}>{title}</h5>
-      <p style={{ fontSize: '13px', color: 'rgba(0,0,0,0.5)', fontWeight: 600 }}>{desc}</p>
-      
-      {/* Subtle Glow Effect */}
-      {hovered && (
-        <div style={{
-          position: 'absolute',
-          bottom: '-20px',
-          right: '-20px',
-          width: '100px',
-          height: '100px',
-          background: 'var(--clr-moss-500)',
-          filter: 'blur(40px)',
-          opacity: 0.15,
-          zIndex: -1
-        }} />
-      )}
-    </div>
-  );
-};
-
-const IntegrityPill = ({ icon: Icon, label }) => {
-  const [hovered, setHovered] = useState(false);
-  return (
-    <div 
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{ 
-        display: 'flex', 
-        alignItems: 'center', 
-        gap: '12px', 
-        padding: '16px 32px', 
-        borderRadius: '100px', 
-        background: hovered ? 'var(--clr-moss-500)' : '#f9fbf8', 
-        border: hovered ? '2px solid var(--clr-moss-500)' : '1px solid rgba(0,0,0,0.05)', 
-        color: hovered ? '#fff' : '#000',
-        fontWeight: 800,
-        transition: 'all 0.3s ease',
-        transform: hovered ? 'translateY(-12px) scale(1.05)' : 'translateY(0) scale(1)',
-        cursor: 'pointer',
-        boxShadow: hovered ? '0 15px 30px rgba(45, 90, 39, 0.2)' : 'none'
-      }}
-    >
-      <Icon size={18} color={hovered ? '#fff' : 'var(--clr-moss-500)'} /> {label}
-    </div>
-  );
-};
-
-const Hero = ({ onStart }) => {
-  const [loaded, setLoaded] = useState(false);
-  const [scrollY, setScrollY] = useState(0);
-  const heroRef = useRef(null);
-  
+// Animated counter hook
+function useCounter(target, duration = 2000, start = false) {
+  const [count, setCount] = useState(0);
   useEffect(() => {
-    setLoaded(true);
-    const handleScroll = () => setScrollY(window.scrollY);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    if (!start) return;
+    let startTime = null;
+    const step = (timestamp) => {
+      if (!startTime) startTime = timestamp;
+      const progress = Math.min((timestamp - startTime) / duration, 1);
+      setCount(Math.floor(progress * target));
+      if (progress < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }, [start, target, duration]);
+  return count;
+}
+
+// Floating glass particle
+function GlassParticle({ style }) {
+  return (
+    <div style={{
+      position: 'absolute',
+      borderRadius: '50%',
+      background: 'rgba(255,255,255,0.03)',
+      border: '1px solid rgba(255,255,255,0.08)',
+      backdropFilter: 'blur(4px)',
+      ...style,
+    }} />
+  );
+}
+
+// Live analysis card that cycles through properties
+const LIVE_PROPERTIES = [
+  { city: 'Mumbai', area: 'Bandra West', price: '₹2.4 Cr', conf: 94, type: 'Apartment' },
+  { city: 'Bengaluru', area: 'Whitefield', price: '₹1.1 Cr', conf: 91, type: 'Villa' },
+  { city: 'Hyderabad', area: 'Gachibowli', price: '₹78L', conf: 88, type: 'Apartment' },
+  { city: 'Delhi', area: 'Dwarka Sec 12', price: '₹1.6 Cr', conf: 93, type: 'Builder Floor' },
+  { city: 'Pune', area: 'Hinjewadi', price: '₹92L', conf: 90, type: 'Apartment' },
+];
+
+function LiveAnalysisCard() {
+  const [idx, setIdx] = useState(0);
+  const [visible, setVisible] = useState(true);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setVisible(false);
+      setTimeout(() => {
+        setIdx(i => (i + 1) % LIVE_PROPERTIES.length);
+        setVisible(true);
+      }, 400);
+    }, 2800);
+    return () => clearInterval(interval);
   }, []);
 
-  const scrollToSection = (id) => {
-    document.getElementById(id)?.scrollIntoView({ 
-      behavior: 'smooth',
-      block: 'center'
-    });
-  };
+  const p = LIVE_PROPERTIES[idx];
+  return (
+    <div style={{
+      background: 'rgba(255,255,255,0.04)',
+      backdropFilter: 'blur(24px)',
+      border: '1px solid rgba(255,255,255,0.12)',
+      borderRadius: '20px',
+      padding: '20px 24px',
+      display: 'flex',
+      gap: '16px',
+      alignItems: 'center',
+      opacity: visible ? 1 : 0,
+      transform: visible ? 'translateY(0)' : 'translateY(8px)',
+      transition: 'all 0.4s ease',
+      boxShadow: '0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1)',
+      minWidth: '280px',
+    }}>
+      <div style={{
+        width: 44, height: 44, borderRadius: '12px',
+        background: 'linear-gradient(135deg, #3b82f6, #6366f1)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontSize: '20px', flexShrink: 0,
+        boxShadow: '0 4px 12px rgba(59,130,246,0.4)',
+      }}>🏠</div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 700, marginBottom: '2px' }}>
+          Live · {p.type}
+        </div>
+        <div style={{ fontSize: '15px', fontWeight: 800, color: '#fff', marginBottom: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          {p.area}, {p.city}
+        </div>
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+          <span style={{ fontSize: '18px', fontWeight: 900, color: '#60a5fa' }}>{p.price}</span>
+          <span style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '20px', background: 'rgba(16,185,129,0.15)', color: '#34d399', fontWeight: 700, border: '1px solid rgba(16,185,129,0.3)' }}>
+            {p.conf}% Conf.
+          </span>
+        </div>
+      </div>
+      <div style={{
+        width: 8, height: 8, borderRadius: '50%', background: '#34d399',
+        animation: 'pulse-dot 1.5s ease-in-out infinite',
+        boxShadow: '0 0 8px #34d399', flexShrink: 0,
+      }} />
+    </div>
+  );
+}
+
+const Hero = ({ onStart }) => {
+  const [started, setStarted] = useState(false);
+  const heroRef = useRef(null);
+
+  const val1 = useCounter(98, 1800, started);
+  const val2 = useCounter(25000, 2200, started);
+  const val3 = useCounter(12, 1500, started);
+
+  useEffect(() => {
+    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) setStarted(true); }, { threshold: 0.2 });
+    if (heroRef.current) obs.observe(heroRef.current);
+    return () => obs.disconnect();
+  }, []);
 
   return (
-    <div className="hero-minimal-wrapper" ref={heroRef} style={{ 
-      minHeight: '100vh', 
-      position: 'relative', 
-      background: '#fff',
-      display: 'flex',
-      flexDirection: 'column',
-      overflow: 'hidden'
-    }}>
-      
-      {/* Parallax Background Layer */}
-      <div style={{
-        position: 'absolute',
-        inset: 0,
-        backgroundImage: `url('/hero-bg.png')`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundAttachment: 'fixed',
-        transform: `translateY(${scrollY * 0.4}px)`,
-        opacity: 0.5,
-        zIndex: 0
-      }} />
-      
-      {/* Signal Sphere */}
-      <SignalSphere scrollY={scrollY} />
+    <div className="hero-page-wrapper" ref={heroRef}>
 
-      {/* Gradient Overlays for Readability */}
-      <div style={{
-        position: 'absolute',
-        inset: 0,
-        background: 'linear-gradient(180deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.98) 80%)',
-        zIndex: 1
-      }} />
+      {/* ── HERO ── */}
+      <div className="hero-container animate-fade-in">
 
-      {/* Navigation */}
-      <nav style={{ 
-        height: '100px', 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'space-between', 
-        padding: '0 8%', 
-        position: 'relative', 
-        zIndex: 10
-      }}>
-        <div style={{ fontSize: '24px', fontWeight: 900, color: '#111', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Zap size={24} fill="#111" /> PropIQ
+        {/* Animated aurora orbs */}
+        <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 0 }}>
+          <div style={{ position: 'absolute', top: '-20%', left: '-10%', width: '60%', height: '60%', borderRadius: '50%', background: 'radial-gradient(circle, rgba(181,26,43,0.22) 0%, transparent 70%)', filter: 'blur(80px)', animation: 'drift1 12s ease-in-out infinite alternate' }} />
+          <div style={{ position: 'absolute', bottom: '-20%', right: '-10%', width: '50%', height: '50%', borderRadius: '50%', background: 'radial-gradient(circle, rgba(255,165,134,0.15) 0%, transparent 70%)', filter: 'blur(100px)', animation: 'drift2 16s ease-in-out infinite alternate' }} />
+          <div style={{ position: 'absolute', top: '40%', left: '40%', width: '30%', height: '30%', borderRadius: '50%', background: 'radial-gradient(circle, rgba(132,26,37,0.15) 0%, transparent 70%)', filter: 'blur(60px)', animation: 'drift1 10s ease-in-out infinite alternate-reverse' }} />
+          {/* Glass particles */}
+          <GlassParticle style={{ width: 120, height: 120, top: '15%', right: '18%', animation: 'float-asset 8s ease-in-out infinite' }} />
+          <GlassParticle style={{ width: 60, height: 60, top: '60%', left: '8%', animation: 'float-asset 6s ease-in-out infinite 1s' }} />
+          <GlassParticle style={{ width: 80, height: 80, bottom: '20%', right: '30%', animation: 'float-asset 10s ease-in-out infinite 2s' }} />
+          <GlassParticle style={{ width: 40, height: 40, top: '30%', left: '20%', animation: 'float-asset 7s ease-in-out infinite 0.5s' }} />
         </div>
-        
-        {/* Cylinder Shaped Nav Pod */}
-        <div style={{ 
-          display: 'flex', 
-          gap: '40px', 
-          fontSize: '13px', 
-          fontWeight: 700, 
-          color: '#111',
-          background: 'rgba(0,0,0,0.03)',
-          padding: '12px 40px',
-          borderRadius: '100px',
-          border: '1px solid rgba(0,0,0,0.04)',
-          backdropFilter: 'blur(10px)'
-        }}>
-          <span style={{ cursor: 'pointer' }} onClick={() => scrollToSection('markets')}>Markets</span>
-          <span style={{ cursor: 'pointer' }} onClick={() => scrollToSection('research')}>Research</span>
-          <span style={{ cursor: 'pointer' }} onClick={() => scrollToSection('intelligence')}>Intelligence</span>
-          <span style={{ cursor: 'pointer' }} onClick={() => scrollToSection('contact')}>Contact</span>
-        </div>
-        <div>
-          <button className="btn-auth" style={{ 
-            padding: '12px 24px', 
-            background: 'rgba(255, 255, 255, 0.1)',
-            backdropFilter: 'blur(20px)',
-            color: '#000',
-            border: '1px solid rgba(0,0,0,0.05)'
-          }} onClick={onStart}>Get Started</button>
-        </div>
-      </nav>
 
-      {/* Main Content */}
-      <div className="hero-main" style={{ 
-        flex: 1, 
-        display: 'flex', 
-        flexDirection: 'column', 
-        alignItems: 'center', 
-        justifyContent: 'center', 
-        textAlign: 'center', 
-        padding: '60px 10% 100px',
-        position: 'relative', 
-        zIndex: 5,
-        opacity: loaded ? 1 : 0,
-        transform: loaded ? 'translateY(0)' : 'translateY(30px)',
-        transition: 'all 1s cubic-bezier(0.23, 1, 0.32, 1)'
-      }}>
-        <div className="badge-mini" style={{ background: 'rgba(0,0,0,0.05)', color: '#111', border: '1px solid rgba(0,0,0,0.1)' }}>Institutional-Grade Property Valuations</div>
-        
-        <h1 style={{ 
-          fontSize: 'clamp(48px, 8vw, 92px)', 
-          maxWidth: '1000px', 
-          marginBottom: '24px',
-          color: '#000',
-          fontWeight: 900,
-          letterSpacing: '-0.04em',
-          lineHeight: 0.95
-        }}>
-          Precision Valuations.<br />
-          Street-Level Intelligence.
-        </h1>
-        
-        <p style={{ 
-          fontSize: 'clamp(18px, 2vw, 22px)', 
-          color: 'rgba(0,0,0,0.7)', 
-          maxWidth: '750px', 
-          marginBottom: '48px',
-          fontWeight: 600,
-          lineHeight: 1.5
-        }}>
-          Eliminate guesswork with AI-driven property benchmarks. 
-          We provide RERA-verified, street-level insights powered by ensemble machine learning.
-        </p>
-
-        <button className="btn-auth" style={{ 
-          marginBottom: '40px', 
-          padding: '20px 48px', 
-          fontSize: '18px',
-          background: 'rgba(45, 90, 39, 0.1)', 
-          backdropFilter: 'blur(25px)',
-          border: '1px solid rgba(45, 90, 39, 0.2)',
-          color: 'var(--clr-moss-500)'
-        }} onClick={onStart}>
-          Start Free Valuation <ArrowRight size={22} />
-        </button>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', fontSize: '14px', fontWeight: 700, color: 'rgba(0,0,0,0.6)' }}>
-          <div style={{ display: 'flex', marginLeft: '12px' }}>
-            {[1,2,3,4].map(i => (
-              <div key={i} style={{ 
-                width: 32, height: 32, borderRadius: '50%', background: '#eee', 
-                border: '3px solid #fff', marginLeft: '-12px',
-                backgroundImage: `url('https://i.pravatar.cc/100?img=${i+15}')`,
-                backgroundSize: 'cover'
-              }} />
-            ))}
+        {/* Nav */}
+        <nav className="hero-nav" style={{ position: 'relative', zIndex: 10 }}>
+          <div className="logo">Prop<span>IQ</span></div>
+          <div className="nav-links">
+            <a href="#features">Features</a>
+            <a href="#how-it-works">Process</a>
+            <button 
+              className="nav-link-btn" 
+              onClick={() => document.getElementById('accuracy')?.scrollIntoView({ behavior: 'smooth' })}
+              style={{ background: 'none', border: 'none', color: 'rgba(255, 255, 255, 0.7)', fontWeight: 600, cursor: 'pointer', fontSize: '16px' }}
+            >
+              Accuracy
+            </button>
           </div>
-          <span>VALUED 1,200+ PROPERTIES THIS MONTH</span>
+          <button className="btn-glass-nav" onClick={onStart}>
+            Analyze Now
+          </button>
+        </nav>
+
+        {/* Hero content */}
+        <div className="hero-content" style={{ position: 'relative', zIndex: 5, textAlign: 'center', gridTemplateColumns: '1fr' }}>
+          <div className="hero-text" style={{ maxWidth: '900px', margin: '0 auto' }}>
+            <div className="badge-new">
+              <span className="pulse"></span>
+              PropIQ v2.0 · Aurora Intelligence
+            </div>
+            <h1>
+              Predict Property Value<br />
+              with <span>AI Precision</span>
+            </h1>
+            <p className="glass-text" style={{ maxWidth: '620px', margin: '0 auto 40px auto' }}>
+              The most advanced ML engine for Indian real estate. Get instant, transparent 
+              property valuations powered by 25+ market signals and RERA-verified data.
+            </p>
+
+            <div className="hero-cta" style={{ justifyContent: 'center', marginBottom: '60px' }}>
+              <button className="btn-primary-hero" onClick={onStart}>
+                Get Started <ArrowRight size={20} />
+              </button>
+              <button className="btn-secondary-hero" onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}>
+                See How It Works
+              </button>
+            </div>
+
+            {/* Animated stats */}
+            <div className="hero-stats">
+              <div className="stat-item">
+                <div className="stat-icon"><ShieldCheck size={20} /></div>
+                <div className="stat-info">
+                  <span className="stat-value">{started ? val1 : 0}%</span>
+                  <span className="stat-label">Accuracy Rate</span>
+                </div>
+              </div>
+              <div className="stat-item">
+                <div className="stat-icon"><TrendingUp size={20} /></div>
+                <div className="stat-info">
+                  <span className="stat-value">{started ? val2.toLocaleString() : '0'}+</span>
+                  <span className="stat-label">Properties Analysed</span>
+                </div>
+              </div>
+              <div className="stat-item">
+                <div className="stat-icon"><Zap size={20} /></div>
+                <div className="stat-info">
+                  <span className="stat-value">{started ? val3 : 0}s</span>
+                  <span className="stat-label">Avg Analysis Time</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Right side — glass cards */}
+          <div className="hero-visual">
+            <div className="visual-wrapper" style={{ display: 'flex', flexDirection: 'column', gap: '16px', alignItems: 'stretch' }}>
+
+              {/* Live analysis card */}
+              <LiveAnalysisCard />
+
+              {/* Glass info cards row */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                {[
+                  { icon: '🏗️', label: 'Infra Score', val: '87/100', color: '#f59e0b' },
+                  { icon: '📈', label: 'Appreciation', val: '+11.4%', color: '#10b981' },
+                  { icon: '💹', label: 'Rental Yield', val: '3.8% PA', color: '#6366f1' },
+                  { icon: '📡', label: 'Demand Index', val: 'Very High', color: '#ec4899' },
+                ].map((card, i) => (
+                  <div key={i} style={{
+                    background: 'rgba(255,255,255,0.04)',
+                    backdropFilter: 'blur(20px)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: '16px',
+                    padding: '16px',
+                    boxShadow: '0 4px 24px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.08)',
+                    animation: `float-asset ${6 + i}s ease-in-out infinite ${i * 0.5}s`,
+                    transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                  }}
+                    onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = `0 12px 40px rgba(0,0,0,0.3), 0 0 20px ${card.color}20, inset 0 1px 0 rgba(255,255,255,0.12)`; }}
+                    onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '0 4px 24px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.08)'; }}
+                  >
+                    <div style={{ fontSize: '20px', marginBottom: '8px' }}>{card.icon}</div>
+                    <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.45)', textTransform: 'uppercase', letterSpacing: '0.8px', fontWeight: 700, marginBottom: '4px' }}>{card.label}</div>
+                    <div style={{ fontSize: '18px', fontWeight: 900, color: card.color, textShadow: `0 0 12px ${card.color}60` }}>{card.val}</div>
+                  </div>
+                ))}
+              </div>
+
+              {/* AI confidence bar */}
+              <div style={{
+                background: 'rgba(255,255,255,0.04)',
+                backdropFilter: 'blur(20px)',
+                border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: '16px',
+                padding: '18px 20px',
+                boxShadow: '0 4px 24px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.08)',
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+                  <span style={{ fontSize: '13px', fontWeight: 700, color: 'rgba(255,255,255,0.7)' }}>🧠 ML Confidence Score</span>
+                  <span style={{ fontSize: '14px', fontWeight: 900, color: '#34d399' }}>94%</span>
+                </div>
+                <div style={{ height: '6px', background: 'rgba(255,255,255,0.08)', borderRadius: '99px', overflow: 'hidden' }}>
+                  <div style={{
+                    height: '100%', width: '94%', borderRadius: '99px',
+                    background: 'linear-gradient(90deg, #10b981, #3b82f6, #6366f1)',
+                    boxShadow: '0 0 10px rgba(16,185,129,0.5)',
+                    animation: 'shimmer 3s ease-in-out infinite',
+                  }} />
+                </div>
+                <div style={{ display: 'flex', gap: '8px', marginTop: '10px', flexWrap: 'wrap' }}>
+                  {['RERA Data', 'CPWD Rates', 'Locality AI', 'Age Model'].map(t => (
+                    <span key={t} style={{ fontSize: '10px', padding: '3px 8px', borderRadius: '20px', background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.25)', color: '#a5b4fc', fontWeight: 700 }}>{t}</span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Floating Service Cards with Rise Animation */}
-        <div style={{ 
-          marginTop: '80px', 
-          display: 'flex', 
-          gap: '24px', 
-          flexWrap: 'wrap', 
-          justifyContent: 'center' 
-        }}>
-          <ServicePill icon={Cpu} label="ML ENSEMBLE" delay={0.2} />
-          <ServicePill icon={Globe} label="25+ CITIES" delay={0.4} />
-          <ServicePill icon={Shield} label="RERA VERIFIED" delay={0.6} />
-          <ServicePill icon={Database} label="STREET-LEVEL DATA" delay={0.8} />
+        {/* Scroll indicator */}
+        <div className="hero-footer">
+          <div className="scroll-indicator" onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })} style={{ cursor: 'pointer' }}>
+            <div className="mouse"><div className="wheel"></div></div>
+            <span>Explore PropIQ</span>
+          </div>
         </div>
       </div>
 
-      {/* ── SECTIONS ── */}
-      
-      {/* Markets Section */}
-      <section id="markets" style={{ padding: '150px 10%', background: '#fff', textAlign: 'center', position: 'relative', zIndex: 10 }}>
-        <div className="badge-mini" style={{ background: 'rgba(45, 90, 39, 0.05)', color: 'var(--clr-moss-500)', border: '1px solid rgba(45, 90, 39, 0.1)' }}>Coverage</div>
-        <h2 style={{ fontSize: '64px', marginBottom: '32px', color: '#000', fontWeight: 900 }}>Micro-Market Mastery.</h2>
-        <p style={{ fontSize: '20px', color: 'rgba(0,0,0,0.6)', maxWidth: '850px', margin: '0 auto 80px', fontWeight: 600, lineHeight: 1.6 }}>
-          PropIQ covers 25+ major Indian cities. We track over 25,000+ unique micro-market signals to capture the hyper-local price dynamics that generic models miss.
-        </p>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '32px' }}>
-           {[
-             { name: 'Mumbai', desc: 'Financial capital density' },
-             { name: 'Bengaluru', desc: 'IT corridor appreciation' },
-             { name: 'Delhi NCR', desc: 'Regional growth nodes' },
-             { name: 'Hyderabad', desc: 'Pharma & Tech hub' },
-             { name: 'Pune', desc: 'Automotive industrial value' },
-             { name: 'Chennai', desc: 'Manufacturing coastal premium' },
-             { name: 'Kolkata', desc: 'Cultural & Heritage premium' },
-             { name: 'Ahmedabad', desc: 'Manufacturing & Textile hub' },
-             { name: 'Jaipur', desc: 'Tourism & Gemstone growth' }
-           ].map((city) => (
-             <CityCard key={city.name} name={city.name} desc={city.desc} />
-           ))}
-           <CityCard name="EXPLORE MORE" isMore onClick={() => window.open('https://propiq.ai/markets', '_blank')} />
+      {/* ── FEATURES ── */}
+      <section id="features" className="hero-section features-section">
+        <div className="section-header">
+          <h2 className="gradient-text">Engineered for Accuracy</h2>
+          <p>The most advanced real estate intelligence toolkit ever built for India.</p>
+        </div>
+        <div className="features-grid">
+          {[
+            { icon: <Target size={32} />, title: 'Micro-Market Precision', desc: 'We analyze data down to the street level, capturing nuances that generic models miss completely.', color: '#6366f1' },
+            { icon: <Brain size={32} />, title: 'ML Brain Architecture', desc: 'Our Neural network processes 25+ parameters including infra-growth, age-factors and locality demand.', color: '#3b82f6' },
+            { icon: <Globe size={32} />, title: 'RERA Verified Data', desc: 'All valuations are cross-referenced with government RERA filings and CPWD construction rates.', color: '#10b981' },
+            { icon: <TrendingUp size={32} />, title: 'Appreciation Forecast', desc: 'Get a 3-year projection of your property value based on infrastructure growth signals.', color: '#f59e0b' },
+            { icon: <ShieldCheck size={32} />, title: 'Negotiation Shield', desc: 'Compare the broker quote vs ML fair value to know if you\'re overpaying — in seconds.', color: '#ec4899' },
+            { icon: <Zap size={32} />, title: 'Instant Analysis', desc: 'Get a comprehensive intelligence report with ROI, TCO, and market signals in under 15 seconds.', color: '#a855f7' },
+          ].map((f, i) => (
+            <div key={i} className="feature-card" style={{
+              background: 'rgba(255,255,255,0.03)',
+              backdropFilter: 'blur(20px)',
+              border: `1px solid rgba(255,255,255,0.08)`,
+              borderRadius: '24px',
+              padding: '32px',
+              position: 'relative',
+              overflow: 'hidden',
+              transition: 'all 0.4s ease',
+              boxShadow: '0 4px 24px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.06)',
+            }}
+              onMouseEnter={e => {
+                e.currentTarget.style.transform = 'translateY(-8px)';
+                e.currentTarget.style.border = `1px solid ${f.color}40`;
+                e.currentTarget.style.boxShadow = `0 20px 50px rgba(0,0,0,0.3), 0 0 30px ${f.color}15, inset 0 1px 0 rgba(255,255,255,0.1)`;
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.transform = '';
+                e.currentTarget.style.border = '1px solid rgba(255,255,255,0.08)';
+                e.currentTarget.style.boxShadow = '0 4px 24px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.06)';
+              }}
+            >
+              {/* Glow spot */}
+              <div style={{ position: 'absolute', top: '-40%', right: '-20%', width: '200px', height: '200px', borderRadius: '50%', background: `radial-gradient(circle, ${f.color}18 0%, transparent 70%)`, pointerEvents: 'none' }} />
+              <div style={{ width: '56px', height: '56px', borderRadius: '16px', background: `${f.color}15`, border: `1px solid ${f.color}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: f.color, marginBottom: '20px', position: 'relative', zIndex: 1 }}>
+                {f.icon}
+              </div>
+              <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#fff', marginBottom: '10px', position: 'relative', zIndex: 1 }}>{f.title}</h3>
+              <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.55)', lineHeight: 1.7, position: 'relative', zIndex: 1, margin: 0 }}>{f.desc}</p>
+            </div>
+          ))}
         </div>
       </section>
 
-      {/* Intelligence Section */}
-      <section id="intelligence" style={{ padding: '150px 10%', background: '#f9fbf8', textAlign: 'center', position: 'relative', zIndex: 10 }}>
-        <div className="badge-mini" style={{ background: 'rgba(0,0,0,0.05)', color: '#111' }}>Technology</div>
-        <h2 style={{ fontSize: '64px', marginBottom: '32px', color: '#000', fontWeight: 900 }}>Neural Valuations.</h2>
-        <p style={{ fontSize: '20px', color: 'rgba(0,0,0,0.6)', maxWidth: '850px', margin: '0 auto 100px', fontWeight: 600, lineHeight: 1.6 }}>
-          Our engine utilizes an ensemble architecture, blending HistGradientBoosting and Random Forest models for institutional-grade accuracy.
-        </p>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '40px' }}>
-           <IntelCard icon={TrendingUp} title="Real-time Inference" desc="Valuations generated in under 2 seconds. Our optimized pipelines handle massive data ingestion to provide instant feedback." delay={0.1} />
-           <IntelCard icon={BarChart} title="Feature Explainability" desc="Transparent results. We show exactly how variables like floor height, age, and local demand affect the final valuation score." delay={0.2} />
-           <IntelCard icon={Layers} title="Ensemble Precision" desc="Our model blends HGBR and Random Forest architectures to eliminate bias and achieve 98%+ precision against actual records." delay={0.3} />
-           <IntelCard icon={Network} title="Geo-Spatial Context" desc="Every valuation accounts for hyper-local signals: infra proximity, transit nodes, and micro-market absorption rates." delay={0.4} />
+      {/* ── ACCURACY STATS ── */}
+      <section id="accuracy" className="hero-section" style={{ paddingTop: '60px', paddingBottom: '100px' }}>
+        <div className="section-header" style={{ marginBottom: '60px' }}>
+          <h2 className="gradient-text">Trusted Numbers</h2>
+          <p>Real performance metrics from our ML valuation engine.</p>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '24px', maxWidth: '1100px', margin: '0 auto' }}>
+          {[
+            { val: '98.4%', label: 'Valuation Accuracy', icon: '🎯', color: '#10b981', desc: 'vs. actual sale prices' },
+            { val: '25K+',  label: 'Properties Analysed', icon: '🏠', color: '#3b82f6', desc: 'across 80+ Indian cities' },
+            { val: '500+',  label: 'Localities Mapped',   icon: '📍', color: '#6366f1', desc: 'with micro-market data' },
+            { val: '25+',   label: 'ML Parameters',       icon: '🧠', color: '#a855f7', desc: 'per valuation model' },
+          ].map((s, i) => (
+            <div key={i} style={{
+              background: 'rgba(255,255,255,0.03)',
+              backdropFilter: 'blur(24px)',
+              border: `1px solid ${s.color}25`,
+              borderRadius: '24px',
+              padding: '36px 28px',
+              textAlign: 'center',
+              boxShadow: `0 4px 30px rgba(0,0,0,0.2), 0 0 40px ${s.color}08, inset 0 1px 0 rgba(255,255,255,0.07)`,
+              transition: 'all 0.35s ease',
+              position: 'relative',
+              overflow: 'hidden',
+            }}
+              onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-6px)'; e.currentTarget.style.boxShadow = `0 20px 50px rgba(0,0,0,0.3), 0 0 40px ${s.color}20`; }}
+              onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = `0 4px 30px rgba(0,0,0,0.2), 0 0 40px ${s.color}08, inset 0 1px 0 rgba(255,255,255,0.07)`; }}
+            >
+              <div style={{ position: 'absolute', top: '-40%', right: '-20%', width: '180px', height: '180px', borderRadius: '50%', background: `radial-gradient(circle, ${s.color}15 0%, transparent 70%)`, pointerEvents: 'none' }} />
+              <div style={{ fontSize: '36px', marginBottom: '16px' }}>{s.icon}</div>
+              <div style={{ fontSize: '42px', fontWeight: 900, background: `linear-gradient(135deg, #fff, ${s.color})`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', marginBottom: '8px', letterSpacing: '-1px' }}>{s.val}</div>
+              <div style={{ fontSize: '14px', fontWeight: 800, color: '#fff', marginBottom: '4px' }}>{s.label}</div>
+              <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', fontWeight: 500 }}>{s.desc}</div>
+            </div>
+          ))}
         </div>
       </section>
 
-      {/* Merged Deep Research & Pipeline Section */}
-      <section id="research" style={{ padding: '150px 10%', background: '#fff', textAlign: 'center', position: 'relative', zIndex: 10 }}>
-        <div className="badge-mini" style={{ background: 'rgba(45, 90, 39, 0.05)', color: 'var(--clr-moss-500)' }}>Deep Research & Process</div>
-        <h2 style={{ fontSize: '64px', marginBottom: '32px', color: '#000', fontWeight: 900 }}>High-Fidelity Intelligence.</h2>
-        <p style={{ fontSize: '20px', color: 'rgba(0,0,0,0.6)', maxWidth: '850px', margin: '0 auto 80px', fontWeight: 600, lineHeight: 1.6 }}>
-          A transparent look at our institutional-grade research and the proprietary pipeline that transforms raw signals into street-level decisions.
-        </p>
-        
-        {/* Step Flow Part */}
-        <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap', position: 'relative', justifyContent: 'center', marginBottom: '100px' }}>
-          <PipelineStep stepNum="01" icon={Database} title="Multi-Source Ingestion" desc="Daily ingestion of RERA filings, registry records, and local brokerage signals." delay={0.1} />
-          <PipelineStep stepNum="02" icon={Settings} title="Neural Cleaning" desc="Automated noise reduction and feature normalization across 25+ city schemas." delay={0.2} />
-          <PipelineStep stepNum="03" icon={Terminal} title="Fast Inference API" desc="Our REST API computes the ensemble valuation in <200ms using optimized weights." delay={0.3} />
-          <PipelineStep stepNum="04" icon={CheckCircle} title="Verified Output" desc="Final report generated with explainability scores and market confidence metrics." delay={0.4} />
+      {/* ── HOW IT WORKS ── */}
+      <section id="how-it-works" className="hero-section process-section">
+        <div className="section-header">
+          <h2 className="gradient-text">How it Works</h2>
+          <p>From data entry to deep intelligence in 3 simple steps.</p>
+        </div>
+        <div className="process-steps">
+          {[
+            { num: '01', title: 'Enter Details', desc: 'Provide property specifics — location, area, type and configuration.', icon: '📍', color: '#3b82f6' },
+            { num: '02', title: 'ML Processing', desc: 'Our engine compares your data against 25,000+ historical transactions.', icon: '🧠', color: '#6366f1' },
+            { num: '03', title: 'Get Insights', desc: 'Receive a comprehensive report with fair value, TCO, and ROI analysis.', icon: '📊', color: '#10b981' },
+          ].map((step, i) => (
+            <React.Fragment key={i}>
+              <div style={{
+                background: 'rgba(255,255,255,0.03)',
+                backdropFilter: 'blur(20px)',
+                border: `1px solid ${step.color}25`,
+                borderRadius: '24px',
+                padding: '36px 28px',
+                textAlign: 'center',
+                position: 'relative',
+                overflow: 'hidden',
+                boxShadow: `0 4px 24px rgba(0,0,0,0.2), 0 0 40px ${step.color}08, inset 0 1px 0 rgba(255,255,255,0.06)`,
+                transition: 'all 0.4s ease',
+              }}
+                onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-6px)'; e.currentTarget.style.boxShadow = `0 20px 50px rgba(0,0,0,0.3), 0 0 40px ${step.color}20, inset 0 1px 0 rgba(255,255,255,0.1)`; }}
+                onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = `0 4px 24px rgba(0,0,0,0.2), 0 0 40px ${step.color}08, inset 0 1px 0 rgba(255,255,255,0.06)`; }}
+              >
+                <div style={{ position: 'absolute', top: '-30%', left: '-20%', width: '200px', height: '200px', borderRadius: '50%', background: `radial-gradient(circle, ${step.color}12 0%, transparent 70%)`, pointerEvents: 'none' }} />
+                <div style={{ fontSize: '48px', marginBottom: '16px' }}>{step.icon}</div>
+                <div style={{ fontSize: '11px', color: step.color, fontWeight: 900, letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '12px' }}>Step {step.num}</div>
+                <h4 style={{ fontSize: '20px', fontWeight: 800, color: '#fff', marginBottom: '12px' }}>{step.title}</h4>
+                <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.5)', lineHeight: 1.7, margin: 0 }}>{step.desc}</p>
+              </div>
+              {i < 2 && (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.2)', fontSize: '24px' }}>→</div>
+              )}
+            </React.Fragment>
+          ))}
         </div>
 
-        {/* Integrity Pills Part */}
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '32px', flexWrap: 'wrap' }}>
-           {[
-             { icon: Shield, label: 'CPWD Verified' },
-             { icon: Search, label: 'Manual Audits' },
-             { icon: Database, label: '25K+ Data Points' }
-           ].map((item, i) => (
-             <IntegrityPill key={i} icon={item.icon} label={item.label} />
-           ))}
+        <div className="process-cta">
+          <button className="btn-primary-hero big" onClick={onStart}>
+            Start Your Free Analysis <ArrowRight size={24} />
+          </button>
         </div>
       </section>
 
-      {/* Contact & Partnership Section */}
-      <section id="contact" style={{ padding: '150px 10% 100px', background: '#f9fbf8', textAlign: 'center', position: 'relative', zIndex: 10 }}>
-        <div className="badge-mini" style={{ background: 'rgba(0,0,0,0.05)', color: '#111' }}>Get in Touch</div>
-        <h2 style={{ fontSize: '64px', marginBottom: '32px', color: '#000', fontWeight: 900 }}>Connect with Intelligence.</h2>
-        <p style={{ fontSize: '20px', color: 'rgba(0,0,0,0.6)', maxWidth: '800px', margin: '0 auto 80px', fontWeight: 600, lineHeight: 1.6 }}>
-          Whether you're looking for institutional data access, API integration, or to join our network of data partners, our team is ready to scale with you.
-        </p>
-        
-        {/* Contact Buttons */}
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '24px', flexWrap: 'wrap', marginBottom: '100px' }}>
-          <button className="btn-auth contact-btn-glow" style={{ 
-            background: 'rgba(255, 255, 255, 0.1)', 
-            color: '#000', 
-            border: '1px solid rgba(0,0,0,0.1)', 
-            padding: '18px 40px',
-            backdropFilter: 'blur(20px)'
-          }} onClick={() => window.location.href = 'mailto:onlyravi4321@gmail.com'}>
-            <Mail size={22} /> Gmail
-          </button>
-          <button className="btn-auth contact-btn-glow" style={{ 
-            padding: '18px 40px',
-            background: 'rgba(0, 0, 0, 0.05)',
-            border: '1px solid rgba(0,0,0,0.1)',
-            backdropFilter: 'blur(20px)',
-            color: '#000'
-          }} onClick={() => window.open('https://github.com/TheRaviHub', '_blank')}>
-            <Github size={22} /> GitHub
-          </button>
-          <button className="btn-auth contact-btn-glow" style={{ 
-            background: 'rgba(0, 119, 181, 0.1)', 
-            border: '1px solid rgba(0, 119, 181, 0.2)', 
-            padding: '18px 40px',
-            backdropFilter: 'blur(20px)',
-            color: '#0077b5'
-          }} onClick={() => window.open('https://www.linkedin.com/in/ravi-kumar-singh-3a0157397/', '_blank')}>
-            <Linkedin size={22} /> LinkedIn
-          </button>
-        </div>
-
-        {/* Additional Technical Footer Details */}
-        <div style={{ 
-          display: 'flex', 
-          justifyContent: 'space-between',
-          gap: '40px', 
-          textAlign: 'left',
-          borderTop: '1px solid rgba(0,0,0,0.06)',
-          paddingTop: '80px',
-          marginTop: '80px',
-          flexWrap: 'wrap'
-        }}>
-          <div style={{ flex: '1', minWidth: '200px' }}>
-            <h6 style={{ fontSize: '14px', fontWeight: 900, marginBottom: '20px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Core Capabilities</h6>
-            <ul style={{ listStyle: 'none', padding: 0, fontSize: '14px', color: 'rgba(0,0,0,0.5)', fontWeight: 600, lineHeight: 2.2 }}>
-              <li>Neural Market Mapping</li>
-              <li>Registry Data Hygiene</li>
-              <li>ML Model Explainer</li>
-              <li>Real-time Valuation API</li>
-            </ul>
-          </div>
-          <div style={{ flex: '1', minWidth: '200px', textAlign: 'center' }}>
-            <h6 style={{ fontSize: '14px', fontWeight: 900, marginBottom: '20px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Data Network</h6>
-            <ul style={{ listStyle: 'none', padding: 0, fontSize: '14px', color: 'rgba(0,0,0,0.5)', fontWeight: 600, lineHeight: 2.2 }}>
-              <li>RERA Filings</li>
-              <li>CPWD Cost Indices</li>
-              <li>LHS Brokerage signals</li>
-              <li>Micro-Market Sentiment</li>
-            </ul>
-          </div>
-          <div style={{ flex: '1', minWidth: '200px', textAlign: 'right' }}>
-            <h6 style={{ fontSize: '14px', fontWeight: 900, marginBottom: '20px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Institutional</h6>
-            <ul style={{ listStyle: 'none', padding: 0, fontSize: '14px', color: 'rgba(0,0,0,0.5)', fontWeight: 600, lineHeight: 2.2 }}>
-              <li>Partner Program</li>
-              <li>Enterprise API</li>
-              <li>Data Research Hub</li>
-              <li>Compliance & Privacy</li>
-            </ul>
+      {/* ── FOOTER ── */}
+      <footer className="landing-footer">
+        <div className="footer-content">
+          <div className="logo">Prop<span>IQ</span></div>
+          <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '13px' }}>© 2026 PropIQ Intelligence Systems. Built for Indian Home Buyers.</p>
+          <div className="footer-links">
+            <a href="#">Privacy</a>
+            <a href="#">Terms</a>
+            <a href="#">Contact</a>
           </div>
         </div>
-      </section>
-
-      {/* Final Copyright Footer */}
-      <footer style={{ padding: '40px 10%', background: '#fff', textAlign: 'center', borderTop: '1px solid rgba(0,0,0,0.04)', fontSize: '13px', fontWeight: 700, color: 'rgba(0,0,0,0.4)' }}>
-        © 2024 PropIQ Neural Valuations. All rights reserved. Precision from data to decision.
       </footer>
-
-      <style dangerouslySetInnerHTML={{ __html: `
-        @keyframes riseUp {
-          from { opacity: 0; transform: translateY(40px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .contact-btn-glow {
-          transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1) !important;
-        }
-        .contact-btn-glow:hover {
-          transform: translateY(-12px) scale(1.02) !important;
-          box-shadow: 0 20px 40px rgba(0,0,0,0.1) !important;
-        }
-      `}} />
-
     </div>
   );
 };
