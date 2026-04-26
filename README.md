@@ -453,29 +453,6 @@ PropIQ uses a **Warm Crimson / Deep Slate** design language:
 
 ---
 
-## 🏙️ Supported Cities
-
-| City | Base Price/sqft | Infra Score | Annual Trend |
-|---|---|---|---|
-| Mumbai | ₹26,000 | 92 | +5.0% |
-| Gurugram | ₹12,000 | 83 | +6.0% |
-| Bangalore | ₹10,200 | 84 | +13.0% |
-| Noida | ₹9,000 | 80 | +4.0% |
-| Hyderabad | ₹8,500 | 80 | +11.0% |
-| Chennai | ₹7,800 | 78 | +5.0% |
-| Pune | ₹7,800 | 77 | +9.0% |
-| Chandigarh | ₹7,500 | 82 | +5.0% |
-| Kolkata | ₹6,200 | 71 | +2.0% |
-| Kochi | ₹6,500 | 74 | +4.0% |
-| Jaipur | ₹5,400 | 69 | +6.0% |
-| Surat | ₹5,500 | 72 | +6.0% |
-| Indore | ₹5,200 | 70 | +6.0% |
-| Lucknow | ₹5,000 | 66 | +5.0% |
-| Ahmedabad | ₹5,800 | 73 | +7.0% |
-| + 5 more | — | — | — |
-
----
-
 ## 📋 Roadmap
 
 - [x] ML ensemble model (HGBR + RF)
